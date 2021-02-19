@@ -1,0 +1,60 @@
+---
+title: Package Edition
+subtitle: Keep Track
+author: FCACollin
+---
+
+Package squeleton:
+
+```{r}
+# TODO https://rmflight.github.io/posts/2014/07/vignetteAnalysis.html
+options(
+  usethis.description = list(
+    `Authors@R` = 'person(
+    given  = "François",
+    family = "Collin",
+    email  = "fca.collin@gmail.com",
+    role   = c("aut", "cre", "cph"),
+    comment = c(
+      ORCID = "0000-0003-0524-5755"
+    )
+    )',
+  URL      = "https://FCACollin.github.io/Latarnia",
+  License  = "CC BY-NC-ND 4.0",
+  Language =  "en",
+  LazyData = "true",
+  Package  = "RPack.PIRA",
+  Version  = numeric_version("0.0.1"),
+  Title    = "Analysis as an R package: RRMS and PIRA",
+  Description = paste(
+    "Analysis of real-world data to study the Progression Independent",
+    "of Relapse Activity within the Polish population of",
+    "Relapsing-Remitting Multiple Sclerosis subjects."
+  )
+)
+)
+usethis::create_package(".", check_name = TRUE)
+usethis::use_data_raw()
+usethis::use_readme_rmd()
+rmarkdown::render("README.Rmd")
+pkgdown::build_site()
+usethis::use_build_ignore("README.html")
+usethis::use_build_ignore("inst/extdata/*")
+usethis::use_build_ignore("docs")
+usethis::use_build_ignore(".RBuild.Rmd")
+```
+
+After edition of `data-raw/adpira_preprocessing.R`:
+
+```{r}
+source("data-raw/adpira_preprocessing.R")
+```
+
+```{r}
+devtools::document()
+devtools::check()
+
+```
+
+
+
