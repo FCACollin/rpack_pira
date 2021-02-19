@@ -37,11 +37,11 @@ usethis::create_package(".", check_name = TRUE)
 usethis::use_data_raw()
 usethis::use_readme_rmd()
 rmarkdown::render("README.Rmd")
-pkgdown::build_site()
 usethis::use_build_ignore("README.html")
 usethis::use_build_ignore("inst/extdata/*")
 usethis::use_build_ignore("docs")
 usethis::use_build_ignore(".RBuild.Rmd")
+pkgdown::build_site()
 ```
 
 After edition of `data-raw/adpira_preprocessing.R`:
@@ -53,7 +53,7 @@ source("data-raw/adpira_preprocessing.R")
 ```{r}
 devtools::document()
 devtools::check()
-
+devtools::install()
 ```
 
 

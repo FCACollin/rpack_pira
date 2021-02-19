@@ -1420,6 +1420,9 @@ ADPIRA <- within(
 
 ###}}} -- vim fold
 
+ADPIRA$AgeSympt <- as.numeric(substr(ADPIRA$symptom_date, start = 1, stop = 4)) - ADPIRA$birthyear
+ADPIRA$Sympt2Presc <- as.numeric(as.Date(ADPIRA$presc_start) - as.Date(ADPIRA$symptom_date))
+
 usethis::use_data(ADPIRA, overwrite = TRUE)
 
 # [modeline]: # ( vim: set foldlevel=0: )

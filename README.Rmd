@@ -11,12 +11,19 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+knitr::read_chunk("inst/r_code/study.R")
+
 ```
 
 # RPack.PIRA
 
 <!-- badges: start -->
 <!-- badges: end -->
+
+TO DO before delivery:
+
+- skim the data to the essential.
+- skim the code.
 
 The goal of RPack.PIRA is to ...
 
@@ -34,3 +41,43 @@ And the development version from [GitHub](https://github.com/) with:
 # install.packages("devtools")
 devtools::install_github("FCACollin/rpack_pira")
 ```
+
+## Analysis Run
+
+```{r setup}
+```
+
+```{r table_01, results = "asis"}
+```
+
+```{r fig_01}
+```
+
+```{r fig_02}
+```
+
+```{r fig_03}
+```
+
+```{r fig_04}
+```
+
+```{r fig_05}
+```
+
+```{r fig_06}
+```
+
+```{r mod_glm_fit}
+```
+
+```{r mod_glm_devianceTable}
+```
+
+```{r mod_glm_effecttests}
+```
+
+```{r mod_glm_adj_means}
+```
+
+
