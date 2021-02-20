@@ -1,0 +1,6 @@
+^data-raw$
+^README\.Rmd$
+^README\.html$
+^inst/extdata/*$
+^docs$
+^\.RBuild\.Rmd$
