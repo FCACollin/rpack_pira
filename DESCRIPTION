@@ -1,6 +1,6 @@
 Package: RPack.PIRA
 Title: Analysis as an R package: RRMS and PIRA
-Version: 0.0.1
+Version: 1.0.0
 Authors@R: 
     person(given = "François",
            family = "Collin",

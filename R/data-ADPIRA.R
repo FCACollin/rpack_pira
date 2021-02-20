@@ -9,5 +9,6 @@
 #' attr(ADPIRA, "metadata")
 #' sapply(ADPIRA, attr, which = "label")
 #' head(ADPIRA)
+#' 
 "ADPIRA"
 

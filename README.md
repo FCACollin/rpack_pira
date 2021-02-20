@@ -34,6 +34,7 @@ library(ggplot2)
 library(emmeans)
 
 if (require(ggthemr)) ggthemr::ggthemr("fresh") 
+#> Loading required package: ggthemr
 
 captions <- function(x) {
   list(
