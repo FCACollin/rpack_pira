@@ -1,5 +1,8 @@
 ---
-output: github_document
+output:
+  github_document:
+    toc: true
+bibliography: inst/REFERENCES.bib
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -9,6 +12,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
+  dpi = 300,
   out.width = "100%"
 )
 knitr::read_chunk("inst/r_code/study.R")
@@ -18,24 +22,22 @@ knitr::read_chunk("inst/r_code/study.R")
 # RPack.PIRA
 
 <!-- badges: start -->
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 <!-- badges: end -->
 
-TO DO before delivery:
+This is the analysis behind the
+_Assessment of Disability Progression Independent of Relapse and Brain MRI
+Activity in Patients with Multiple Sclerosis in Poland_
+[@Kapica-Topczewska2021],
+a peer-reviewed paper available at: <https://www.mdpi.com/2077-0383/10/4/868>.
+The code has not been further optimised but reproduces with fidelity
+the reported results.
 
-- skim the data to the essential.
-- skim the code.
-
-The goal of RPack.PIRA is to ...
 
 ## Installation
 
-You can install the released version of RPack.PIRA from [CRAN](https://CRAN.R-project.org) with:
-
-``` r
-install.packages("RPack.PIRA")
-```
-
-And the development version from [GitHub](https://github.com/) with:
+You can install the released version of `RPack.PIRA` from
+[GitHub](https://github.com/FCACollin/rpack_pira) with:
 
 ``` r
 # install.packages("devtools")
@@ -47,26 +49,36 @@ devtools::install_github("FCACollin/rpack_pira")
 ```{r setup}
 ```
 
+### Patient characteristics
+
 ```{r table_01, results = "asis"}
 ```
 
-```{r fig_01}
+### Disease progression and relapses
+
+```{r fig_01, fig.width = 7.5, fig.height = 8, fig.cap = captions("fig1")}
 ```
 
-```{r fig_02}
+```{r fig_02, fig.width = 7, fig.height = 4, fig.cap = captions("fig2")}
 ```
 
-```{r fig_03}
+### Disease progression and MRI Activity
+
+```{r fig_03, fig.width = 7, fig.height = 4, fig.cap = captions("fig3")}
 ```
 
-```{r fig_04}
+```{r fig_04, fig.width = 7, fig.height = 4, fig.cap = captions("fig4")}
 ```
 
-```{r fig_05}
+```{r fig_05, fig.width = 7.5, fig.height = 8, fig.cap = captions("fig5")}
 ```
 
-```{r fig_06}
+### Disease progression: relapses and MRI Activity
+
+```{r fig_06, fig.width = 7.5, fig.height = 8, fig.cap = captions("fig6")}
 ```
+
+### Modele: Probability of Disease Worsening
 
 ```{r mod_glm_fit}
 ```
@@ -80,4 +92,12 @@ devtools::install_github("FCACollin/rpack_pira")
 ```{r mod_glm_adj_means}
 ```
 
+### Data
 
+```{r}
+knitr::kable(head(ADPIRA))
+```
+
+## References
+
+[modeline]: # ( vim: set foldlevel=0 spell spelllang=en_gb: )

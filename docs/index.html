@@ -65,64 +65,111 @@
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#rpack-pira" class="anchor"></a>RPack.PIRA</h1></div>
 <!-- badges: start -->
-<!-- badges: end -->
-<p>TO DO before delivery:</p>
-<ul>
-<li>skim the data to the essential.</li>
-<li>skim the code.</li>
-</ul>
-<p>The goal of RPack.PIRA is to …</p>
+
+<p>This is the analysis behind the <em>Assessment of Disability Progression Independent of Relapse and Brain MRI Activity in Patients with Multiple Sclerosis in Poland</em> (Kapica-Topczewska et al. 2021), a peer-reviewed paper available at: <a href="https://www.mdpi.com/2077-0383/10/4/868" class="uri">https://www.mdpi.com/2077-0383/10/4/868</a>. The code has not been further optimised but reproduces with fidelity the reported results.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>You can install the released version of RPack.PIRA from <a href="https://CRAN.R-project.org">CRAN</a> with:</p>
+<p>You can install the released version of <code>RPack.PIRA</code> from <a href="https://github.com/FCACollin/rpack_pira">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"RPack.PIRA"</span><span class="op">)</span></code></pre></div>
-<p>And the development version from <a href="https://github.com/">GitHub</a> with:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"FCACollin/rpack_pira"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="analysis-run" class="section level2">
 <h2 class="hasAnchor">
 <a href="#analysis-run" class="anchor"></a>Analysis Run</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://FCACollin.github.io/Latarnia">RPack.PIRA</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>;
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span>;
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rvlenth/emmeans">emmeans</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://multcomp.R-forge.R-project.org">multcomp</a></span><span class="op">)</span>
-<span class="va">numCores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span>
 
-<span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
-  ggTheme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
-    <span class="st">"flat"</span>,      <span class="st">"flat dark"</span>, <span class="st">"camoflauge"</span>, <span class="st">"chalk"</span>, <span class="st">"copper"</span>,
-    <span class="st">"dust"</span>,      <span class="st">"earth"</span>,     <span class="st">"fresh"</span>,      <span class="st">"grape"</span>, <span class="st">"grass"</span>,
-    <span class="st">"greyscale"</span>, <span class="st">"light"</span>,      <span class="st">"lilac"</span>,     <span class="st">"pale"</span>,  <span class="st">"sea"</span>, 
-    <span class="st">"sky"</span>,        <span class="st">"solarized"</span>, <span class="st">"dust"</span>
-    <span class="op">)</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span>
-  <span class="op">)</span>
+<span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">ggthemr</span><span class="op">)</span><span class="op">)</span> <span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="st">"fresh"</span><span class="op">)</span> 
 
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">ggTheme</span><span class="op">)</span> </code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<span class="va">captions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+    fig1 <span class="op">=</span> <span class="st">"**Figure 1.** Comparison between observed frequencies of worsening
+    diseases and month of observation when no relapse was ever recorded.
+    The upper pane uses the complete set of observations
+    (green; label at y = 1 is \"All\"),
+      the middle pane uses first- and second-line treatment
+      (label at y = 1; first-line, dark brown; second-line, dark blue),
+      and the lower pane uses drug
+      (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue,
+        GLA; Interferon, blue, INF; Natalizumab, light brown, NAT).
+      Abundance is represented by transparency and the figure at the top of
+      each bar. The error bar represents the standard error estimated as
+      p × (1 − p)/n, with p being the number of positives and n the total
+      number of observations.  DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021."</span>,
+      fig2 <span class="op">=</span> <span class="st">"**Figure 2**. Comparison of disease worsening and one relapse
+      during the first year of treatment (between 6 and 12 months).
+      Colors are for: R0 = no relapse, R1 = relapse during the first year.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021."</span>,
+      fig3 <span class="op">=</span> <span class="st">"**Figure 3**.
+      Comparison between disease worsening and three scenarios:
+      R0 (no relapse), R1 (relapse during the first year),
+      and R2 (relapse during the second year).
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021."</span>,
+      fig4 <span class="op">=</span> <span class="st">"**Figure 4**.
+      Comparison between MRI activity and the three scenarios:
+      R0 (no relapse), R1 (relapse during the first year), and
+      R2 (relapse during the second year).
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021."</span>,
+      fig5 <span class="op">=</span> <span class="st">"**Figure 5.** Comparison between the observed frequencies of MRI
+      activity and month of observation when no relapse was
+      ever recorded. The upper pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses
+      first- and second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the
+      drug (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab,
+        light brown, NAT). DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021."</span>,
+      fig6 <span class="op">=</span> <span class="st">"**Figure 6**. Patients with evidenced disease progression:
+      the proportion of estimations derived from observation of patients
+      never associated with any relapses or brain MRI activity between 12
+      and 60 months from the prescription start. The upper
+      pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses first- and
+      second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the drug
+      (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF;
+        Natalizumab, light brown, NAT). The
+      error bar represents the standard error estimated asp × (1 − p)/n,
+      with p being the number of positives and n the total
+      number of observations. DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021."</span>
+      <span class="op">)</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span>
+<span class="op">}</span> </code></pre></div>
+<div id="patient-characteristics" class="section level3">
+<h3 class="hasAnchor">
+<a href="#patient-characteristics" class="anchor"></a>Patient characteristics</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span><span class="va">ADPIRA</span>, f <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">ADPIRA</span><span class="op">$</span><span class="va">presc_months_cat</span>, <span class="va">ADPIRA</span><span class="op">$</span><span class="va">ARM</span><span class="op">)</span><span class="op">)</span>
 
-<span class="va">tmp2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
+<span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
   <span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span>
     <span class="va">X</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span>
 
       <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-        Arm       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">ARMCD</span><span class="op">)</span>,
-        Month     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">presc_months</span><span class="op">)</span>,
-        n         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,
-        <span class="st">"F:M"</span>     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">sex</span> <span class="op">==</span> <span class="st">"female"</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">sex</span> <span class="op">==</span> <span class="st">"male"</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,
-        age       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">age</span><span class="op">)</span><span class="op">)</span>,
-        AgeSympt  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">AgeSympt</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,
+        Arm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">ARMCD</span><span class="op">)</span>,
+        Month <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">presc_months</span><span class="op">)</span>,
+        n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,
+        F.M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">sex</span> <span class="op">==</span> <span class="st">"female"</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">sex</span> <span class="op">==</span> <span class="st">"male"</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,
+        age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">age</span><span class="op">)</span><span class="op">)</span>,
+        AgeSympt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">AgeSympt</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,
         Sympt2Presc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">Sympt2Presc</span><span class="op">)</span><span class="op">/</span><span class="fl">365.25</span>, <span class="fl">2</span><span class="op">)</span>,
-        rlp_n      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">n_rlps_12m</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>,
-        EDSS_start   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">EDSS_start</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
+        rlp_n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">n_rlps_12m</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>,
+        EDSS_start  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">EDSS_start</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
         EDSS_current <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">EDSS_current</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
-        Worse_n    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">worse</span><span class="op">)</span>
+        Worse_n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">worse</span><span class="op">)</span>
       <span class="op">)</span>
 
     <span class="op">}</span>
@@ -130,25 +177,51 @@
 <span class="op">)</span>
 
 <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span>
-  <span class="va">tmp2</span>,
-  caption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
-    <span class="st">"Description of the prescription per scenario and month of observation"</span>
-    <span class="op">)</span>,
-  row.names <span class="op">=</span> <span class="cn">FALSE</span>
+  <span class="va">tbl</span>,
+  caption <span class="op">=</span> <span class="st">"Patient characteristics.
+  Abbreviations: Arm = arm of the study;
+  R0 = no relapse during treatment; R1, R2 = the occurrence of relapse
+  during the first and the second year of treatment, respectively;
+  MRI = magnetic resonance imaging; M = months; n = number;
+  F:M = female to male ratio;
+  Age Symptoms = age at the first symptoms;
+  Symptoms = duration from the first symptoms to prescription start in years;
+  EDSS = The Expanded Disability Status Scale;
+  Worsening number = number of patients with disease worsening."</span>,
+  row.names <span class="op">=</span> <span class="cn">FALSE</span>,
+  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+    Arm <span class="op">=</span> <span class="st">"Arm"</span>, Month <span class="op">=</span> <span class="st">"M"</span>, n <span class="op">=</span> <span class="st">"n"</span>, <span class="st">"F.M"</span> <span class="op">=</span> <span class="st">"F:M"</span>, age <span class="op">=</span> <span class="st">"Age"</span>,
+    AgeSympt <span class="op">=</span> <span class="st">"Age Symptoms"</span>, Sympt2Presc <span class="op">=</span> <span class="st">"Symptoms"</span>,
+    rlp_n   <span class="op">=</span> <span class="st">"Relapse Number"</span>, EDSS_start <span class="op">=</span> <span class="st">"EDSS Baseline"</span>,
+    Worse_n <span class="op">=</span> <span class="st">"Worsening Number"</span>
+    <span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span><span class="op">]</span>
 <span class="op">)</span></code></pre></div>
 <table class="table">
+<colgroup>
+<col width="8%">
+<col width="2%">
+<col width="4%">
+<col width="4%">
+<col width="3%">
+<col width="13%">
+<col width="9%">
+<col width="16%">
+<col width="15%">
+<col width="3%">
+<col width="18%">
+</colgroup>
 <thead><tr class="header">
 <th align="left">Arm</th>
-<th align="right">Month</th>
+<th align="right">M</th>
 <th align="right">n</th>
-<th align="right">F.M</th>
-<th align="right">age</th>
-<th align="right">AgeSympt</th>
-<th align="right">Sympt2Presc</th>
-<th align="right">rlp_n</th>
-<th align="right">EDSS_start</th>
-<th align="right">EDSS_current</th>
-<th align="right">Worse_n</th>
+<th align="right">F:M</th>
+<th align="right">Age</th>
+<th align="right">Age Symptoms</th>
+<th align="right">Symptoms</th>
+<th align="right">Relapse Number</th>
+<th align="right">EDSS Baseline</th>
+<th align="right">NA</th>
+<th align="right">Worsening Number</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -289,7 +362,7 @@
 <td align="right">35</td>
 <td align="right">28.0</td>
 <td align="right">4.21</td>
-<td align="right">250</td>
+<td align="right">0</td>
 <td align="right">2.0</td>
 <td align="right">2.2</td>
 <td align="right">13</td>
@@ -354,7 +427,7 @@
 <td align="right">35</td>
 <td align="right">28.0</td>
 <td align="right">4.06</td>
-<td align="right">592</td>
+<td align="right">0</td>
 <td align="right">2.0</td>
 <td align="right">2.5</td>
 <td align="right">103</td>
@@ -419,7 +492,7 @@
 <td align="right">35</td>
 <td align="right">28.0</td>
 <td align="right">4.00</td>
-<td align="right">342</td>
+<td align="right">0</td>
 <td align="right">2.0</td>
 <td align="right">2.5</td>
 <td align="right">90</td>
@@ -497,7 +570,7 @@
 <td align="right">37</td>
 <td align="right">30.0</td>
 <td align="right">3.46</td>
-<td align="right">378</td>
+<td align="right">0</td>
 <td align="right">2.0</td>
 <td align="right">2.0</td>
 <td align="right">94</td>
@@ -543,14 +616,14 @@
 </tr>
 </tbody>
 </table>
-<p>Description of the prescription per scenario and month of observation</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># EDSS worsening? </span>
-
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">ggTheme</span><span class="op">)</span> 
-
-<span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
-<span class="va">X</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">norlp</span>, f <span class="op">=</span> <span class="va">norlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
+<p>Patient characteristics. Abbreviations: Arm = arm of the study; R0 = no relapse during treatment; R1, R2 = the occurrence of relapse during the first and the second year of treatment, respectively; MRI = magnetic resonance imaging; M = months; n = number; F:M = female to male ratio; Age Symptoms = age at the first symptoms; Symptoms = duration from the first symptoms to prescription start in years; EDSS = The Expanded Disability Status Scale; Worsening number = number of patients with disease worsening.</p>
+</div>
+<div id="disease-progression-and-relapses" class="section level3">
+<h3 class="hasAnchor">
+<a href="#disease-progression-and-relapses" class="anchor"></a>Disease progression and relapses</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
+<span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">norlp</span>, f <span class="op">=</span> <span class="va">norlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
 <span class="va">Xline</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>
   x <span class="op">=</span> <span class="va">norlp</span>, f <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">norlp</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">presc_months_cat</span>, <span class="va">treatment_line</span><span class="op">)</span><span class="op">)</span>
 <span class="op">)</span>
@@ -559,52 +632,59 @@
   drop <span class="op">=</span> <span class="cn">TRUE</span>
 <span class="op">)</span>
 
-<span class="va">FUN</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">drug</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">case</span> <span class="op">=</span> <span class="cn">NA</span>, <span class="va">line</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">{</span>
+<span class="va">FUN</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span>
+  <span class="va">x</span>,
+  <span class="va">criteria</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"worse"</span>, <span class="st">"dMRI_12m"</span><span class="op">)</span>,
+  <span class="va">drug</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">case</span> <span class="op">=</span> <span class="cn">NA</span>, <span class="va">line</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span>
 
+  <span class="va">criteria</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html">match.arg</a></span><span class="op">(</span><span class="va">criteria</span><span class="op">)</span>
   <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
     Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>,
-    n    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,                    <span class="co"># n cases</span>
-    x    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">worse</span><span class="op">)</span>,                <span class="co"># positive cases</span>
-    line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">line</span> <span class="op">&amp;</span> <span class="op">!</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">treatment_line</span><span class="op">)</span><span class="op">)</span>, <span class="st">''</span><span class="op">)</span>,
-    drug <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">prescription</span><span class="op">)</span>, <span class="st">''</span><span class="op">)</span>,
+    n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,
+    x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">[[</span><span class="va">criteria</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,
+    line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">line</span> <span class="op">&amp;</span> <span class="op">!</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">treatment_line</span><span class="op">)</span><span class="op">)</span>, <span class="st">""</span><span class="op">)</span>,
+    drug <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">prescription</span><span class="op">)</span>, <span class="st">""</span><span class="op">)</span>,
     case <span class="op">=</span> <span class="va">case</span>,
     stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span>
   <span class="op">)</span>
 
-  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html">within</a></span><span class="op">(</span>
-    data <span class="op">=</span> <span class="va">y</span>,
-    expr <span class="op">=</span> <span class="op">{</span>
-      <span class="va">p</span>      <span class="op">&lt;-</span> <span class="va">x</span><span class="op">/</span><span class="va">n</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fl">1.96</span> <span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">up</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span> <span class="op">&lt;</span> <span class="fl">1</span>, <span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span>, <span class="fl">1</span><span class="op">)</span>;
-      <span class="va">lo</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span>, <span class="fl">0</span><span class="op">)</span>;
-    <span class="op">}</span>
-  <span class="op">)</span>
+  <span class="va">y</span><span class="op">$</span><span class="va">p</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">$</span><span class="va">x</span> <span class="op">/</span> <span class="va">y</span><span class="op">$</span><span class="va">n</span>
+  <span class="va">y</span><span class="op">$</span><span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="op">(</span><span class="va">y</span><span class="op">$</span><span class="va">p</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">y</span><span class="op">$</span><span class="va">p</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="va">y</span><span class="op">$</span><span class="va">n</span><span class="op">)</span>
+  <span class="va">y</span><span class="op">$</span><span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">y</span><span class="op">$</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">y</span><span class="op">$</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">y</span><span class="op">$</span><span class="va">n</span><span class="op">)</span>
+  <span class="va">y</span><span class="op">$</span><span class="va">up</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">y</span><span class="op">$</span><span class="va">p</span> <span class="op">+</span> <span class="va">y</span><span class="op">$</span><span class="va">halfCI</span> <span class="op">&lt;</span> <span class="fl">1</span>, <span class="va">y</span><span class="op">$</span><span class="va">p</span> <span class="op">+</span> <span class="va">y</span><span class="op">$</span><span class="va">halfCI</span>, <span class="fl">1</span><span class="op">)</span>
+  <span class="va">y</span><span class="op">$</span><span class="va">lo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">y</span><span class="op">$</span><span class="va">p</span> <span class="op">-</span> <span class="va">y</span><span class="op">$</span><span class="va">halfCI</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">y</span><span class="op">$</span><span class="va">p</span> <span class="op">-</span> <span class="va">y</span><span class="op">$</span><span class="va">halfCI</span>, <span class="fl">0</span><span class="op">)</span>
 
-  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+  <span class="va">y</span>
 
 <span class="op">}</span>
 
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"1) All"</span><span class="op">)</span><span class="op">)</span>
-  , <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xline</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"2) line"</span>, line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>
-  , <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
-    <span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xpres</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"3) drug"</span>, line <span class="op">=</span> <span class="cn">TRUE</span>, drug <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-  <span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"1) All"</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xline</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"2) line"</span>, line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xpres</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"3) drug"</span>, line <span class="op">=</span> <span class="cn">TRUE</span>, drug <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>
 <span class="op">)</span>
 
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">dtaplot</span>, <span class="op">(</span><span class="va">up</span> <span class="op">-</span> <span class="va">lo</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">.1</span><span class="op">)</span>
 
+<span class="co"># Graph fine tuning.</span>
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
   <span class="va">dtaplot</span>,
   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
     Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">48</span>, <span class="fl">48</span>, <span class="fl">60</span>, <span class="fl">60</span>, <span class="fl">60</span>, <span class="fl">48</span>, <span class="fl">60</span><span class="op">)</span>,
     n <span class="op">=</span> <span class="fl">0</span>,
     x <span class="op">=</span> <span class="cn">NA</span>,
-    line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">""</span>, <span class="st">""</span>, <span class="st">""</span>, <span class="st">""</span>, <span class="st">"II"</span>, <span class="st">"II"</span><span class="op">)</span>,
-    drug <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"FTY"</span>, <span class="st">"NAT"</span>, <span class="st">"FTY"</span>, <span class="st">"NAT"</span>, <span class="st">"GLA"</span>, <span class="st">""</span>, <span class="st">""</span><span class="op">)</span>,
-    case <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>, <span class="st">"2) line"</span>, <span class="st">"2) line"</span><span class="op">)</span>,
+    line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+      <span class="st">""</span>, <span class="st">""</span>, <span class="st">""</span>, <span class="st">""</span>, <span class="st">""</span>,
+      <span class="st">"II"</span>, <span class="st">"II"</span>
+      <span class="op">)</span>,
+    drug <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+      <span class="st">"FTY"</span>, <span class="st">"NAT"</span>, <span class="st">"FTY"</span>, <span class="st">"NAT"</span>, <span class="st">"GLA"</span>,
+      <span class="st">""</span>, <span class="st">""</span>
+      <span class="op">)</span>,
+    case <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+      <span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>, <span class="st">"3) drug"</span>,
+      <span class="st">"2) line"</span>, <span class="st">"2) line"</span>
+      <span class="op">)</span>,
     lo <span class="op">=</span> <span class="cn">NA</span>,
     up <span class="op">=</span> <span class="cn">NA</span>,
     halfCI <span class="op">=</span> <span class="cn">NA</span>,
@@ -616,7 +696,7 @@
     <span class="va">case</span> <span class="op">==</span> <span class="st">"1) All"</span>, <span class="st">"All"</span>, 
     <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">case</span> <span class="op">==</span> <span class="st">"2) line"</span>, <span class="va">line</span>, <span class="va">drug</span><span class="op">)</span>
   <span class="op">)</span>
-  <span class="op">)</span>
+<span class="op">)</span>
 <span class="va">dtaplot</span><span class="op">$</span><span class="va">Colour</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span>
   <span class="va">dtaplot</span><span class="op">$</span><span class="va">Colour</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"INF"</span>, <span class="st">"GLA"</span>, <span class="st">"FTY"</span>, <span class="st">"NAT"</span>, <span class="st">"I"</span>, <span class="st">"II"</span>, <span class="st">"All"</span><span class="op">)</span>
 <span class="op">)</span>
@@ -670,19 +750,34 @@
     legend.position <span class="op">=</span> <span class="st">"none"</span>,
     panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
     panel.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>
-    <span class="op">)</span>
+  <span class="op">)</span>
 <span class="op">}</span>
 
 <span class="va">gg</span>
 <span class="co">#&gt; Warning: Removed 7 rows containing missing values (geom_text).</span></code></pre></div>
-<p><img src="reference/figures/README-fig_01-1.png" width="100%"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr_reset.html">ggthemr_reset</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">ggTheme</span><span class="op">)</span> 
+<div class="figure">
+<p><img src="reference/figures/README-fig_01-1.png" alt='**Figure 1.** Comparison between observed frequencies of worsening
+    diseases and month of observation when no relapse was ever recorded.
+    The upper pane uses the complete set of observations
+    (green; label at y = 1 is "All"),
+      the middle pane uses first- and second-line treatment
+      (label at y = 1; first-line, dark brown; second-line, dark blue),
+      and the lower pane uses drug
+      (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue,
+        GLA; Interferon, blue, INF; Natalizumab, light brown, NAT).
+      Abundance is represented by transparency and the figure at the top of
+      each bar. The error bar represents the standard error estimated as
+      p × (1 − p)/n, with p being the number of positives and n the total
+      number of observations.  DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021.' width="100%"></p>
+<p class="caption">
+</p>
+<p><strong>Figure 1.</strong> Comparison between observed frequencies of worsening diseases and month of observation when no relapse was ever recorded. The upper pane uses the complete set of observations (green; label at y = 1 is “All”), the middle pane uses first- and second-line treatment (label at y = 1; first-line, dark brown; second-line, dark blue), and the lower pane uses drug (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab, light brown, NAT). Abundance is represented by transparency and the figure at the top of each bar. The error bar represents the standard error estimated as p × (1 − p)/n, with p being the number of positives and n the total number of observations. DMT: disease-modifying therapy. See <a href="https://www.mdpi.com/2077-0383/10/4/868" class="uri">https://www.mdpi.com/2077-0383/10/4/868</a>, Kapica-Topczewska et al. (2021).</p>
 
-<span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
+</div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
 <span class="va">onerlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1"</span><span class="op">)</span>
 <span class="va">onebadrlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1+"</span><span class="op">)</span>
 <span class="va">onelowrlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1-"</span><span class="op">)</span>
@@ -692,44 +787,16 @@
 <span class="va">Xbr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">onebadrlp</span>, f <span class="op">=</span> <span class="va">onebadrlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
 <span class="va">Xlr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">onelowrlp</span>, f <span class="op">=</span> <span class="va">onelowrlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
 
-<span class="va">FUN</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">drug</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">case</span> <span class="op">=</span> <span class="cn">NA</span>, <span class="va">line</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">{</span>
-
-  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-    Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>,
-    n    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,                    <span class="co"># n cases</span>
-    x    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">worse</span><span class="op">)</span>,                <span class="co"># positive cases</span>
-    line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">line</span> <span class="op">&amp;</span> <span class="op">!</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">treatment_line</span><span class="op">)</span><span class="op">)</span>, <span class="st">''</span><span class="op">)</span>,
-    drug <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">prescription</span><span class="op">)</span>, <span class="st">''</span><span class="op">)</span>,
-    case <span class="op">=</span> <span class="va">case</span>,
-    stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span>
-    <span class="op">)</span>;
-
-  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html">within</a></span><span class="op">(</span>
-    data <span class="op">=</span> <span class="va">y</span>,
-    expr <span class="op">=</span> <span class="op">{</span>
-      <span class="va">p</span>      <span class="op">&lt;-</span> <span class="va">x</span><span class="op">/</span><span class="va">n</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fl">1.96</span> <span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">up</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span> <span class="op">&lt;</span> <span class="fl">1</span>, <span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span>, <span class="fl">1</span><span class="op">)</span>;
-      <span class="va">lo</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span>, <span class="fl">0</span><span class="op">)</span>;
-    <span class="op">}</span>
-    <span class="op">)</span>;
-
-  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>;
-
-<span class="op">}</span>
-
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xnr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"1) R0"</span><span class="op">)</span><span class="op">)</span>
-  , <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xor</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"2) R1 (all)"</span><span class="op">)</span><span class="op">)</span>
-  , <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xbr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"3) R1+ (severe)"</span><span class="op">)</span><span class="op">)</span>
-  , <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xlr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"4) R1- (moderate)"</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">)</span>;
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xnr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"1) R0"</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xor</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"2) R1 (all)"</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xbr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"3) R1+ (severe)"</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xlr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"4) R1- (moderate)"</span><span class="op">)</span><span class="op">)</span>
+<span class="op">)</span>
 
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span>
   <span class="va">dtaplot</span>, 
   <span class="op">(</span><span class="va">up</span> <span class="op">-</span> <span class="va">lo</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">.15</span>  <span class="op">&amp;</span> <span class="op">(</span><span class="va">up</span> <span class="op">+</span> <span class="va">lo</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">Time</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">36</span>, <span class="fl">12</span><span class="op">)</span>
-
 <span class="op">)</span>
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
   <span class="va">dtaplot</span>,
@@ -744,22 +811,8 @@
     up <span class="op">=</span> <span class="cn">NA</span>,
     halfCI <span class="op">=</span> <span class="cn">NA</span>,
     p <span class="op">=</span> <span class="fl">0.001</span>
-    <span class="op">)</span>
   <span class="op">)</span>
-<span class="va">dtaplot</span>
-<span class="co">#&gt;     Time    n   x line drug              case         lo         up      halfCI          p</span>
-<span class="co">#&gt; 12    12 5339 231                       1) R0 0.04048207 0.04605099 0.002784464 0.04326653</span>
-<span class="co">#&gt; 24    24 2961 184                       1) R0 0.05770468 0.06657766 0.004436487 0.06214117</span>
-<span class="co">#&gt; 36    36 1392  93                       1) R0 0.06011786 0.07350283 0.006692482 0.06681034</span>
-<span class="co">#&gt; 121   12  592 103                 2) R1 (all) 0.15840566 0.18956731 0.015580826 0.17398649</span>
-<span class="co">#&gt; 241   24  153  17                 2) R1 (all) 0.08570391 0.13651831 0.025407198 0.11111111</span>
-<span class="co">#&gt; 361   36   63   5                 2) R1 (all) 0.04530951 0.11342065 0.034055572 0.07936508</span>
-<span class="co">#&gt; 122   12  342  90             3) R1+ (severe) 0.23934664 0.28696915 0.023811259 0.26315789</span>
-<span class="co">#&gt; 242   24   73  15             3) R1+ (severe) 0.15818880 0.25277011 0.047290656 0.20547945</span>
-<span class="co">#&gt; 123   12  250  13           4) R1- (moderate) 0.03795778 0.06604222 0.014042222 0.05200000</span>
-<span class="co">#&gt; 243   24   80   2           4) R1- (moderate) 0.00754470 0.04245530 0.017455300 0.02500000</span>
-<span class="co">#&gt; 1     36    0  NA             3) R1+ (severe)         NA         NA          NA 0.00100000</span>
-<span class="co">#&gt; 2     36    0  NA           4) R1- (moderate)         NA         NA          NA 0.00100000</span>
+<span class="op">)</span>
 <span class="va">gg</span> <span class="op">&lt;-</span> <span class="op">{</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>
     data <span class="op">=</span> <span class="va">dtaplot</span>,
@@ -797,52 +850,33 @@
     legend.position <span class="op">=</span> <span class="st">"bottom"</span>,
     panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
     panel.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>
-    <span class="op">)</span>
+  <span class="op">)</span>
 <span class="op">}</span>
 
 <span class="va">gg</span></code></pre></div>
-<p><img src="reference/figures/README-fig_02-1.png" width="100%"></p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr_reset.html">ggthemr_reset</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#[FC/191113/14:27]# graph EDSS worsening?</span>
+<div class="figure">
+<p><img src="reference/figures/README-fig_02-1.png" alt="**Figure 2**. Comparison of disease worsening and one relapse
+      during the first year of treatment (between 6 and 12 months).
+      Colors are for: R0 = no relapse, R1 = relapse during the first year.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%"></p>
+<p class="caption">
+</p>
+<p><strong>Figure 2</strong>. Comparison of disease worsening and one relapse during the first year of treatment (between 6 and 12 months). Colors are for: R0 = no relapse, R1 = relapse during the first year. See <a href="https://www.mdpi.com/2077-0383/10/4/868" class="uri">https://www.mdpi.com/2077-0383/10/4/868</a>, Kapica-Topczewska et al. (2021).</p>
 
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">ggTheme</span><span class="op">)</span> 
-
-<span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
+</div>
+</div>
+<div id="disease-progression-and-mri-activity" class="section level3">
+<h3 class="hasAnchor">
+<a href="#disease-progression-and-mri-activity" class="anchor"></a>Disease progression and MRI Activity</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
 <span class="va">onerlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1"</span><span class="op">)</span>
 <span class="va">oneY2rlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R2"</span><span class="op">)</span>
 
 <span class="va">Xnr</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">norlp</span>, f <span class="op">=</span> <span class="va">norlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
 <span class="va">Xor</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">onerlp</span>, f <span class="op">=</span> <span class="va">onerlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
 <span class="va">X2r</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">oneY2rlp</span>, f <span class="op">=</span> <span class="va">oneY2rlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
-
-<span class="va">FUN</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">drug</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">case</span> <span class="op">=</span> <span class="cn">NA</span>, <span class="va">line</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">{</span>
-
-  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-    Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>,
-    n    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,                    <span class="co"># n cases</span>
-    x    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">worse</span><span class="op">)</span>,                <span class="co"># positive cases</span>
-    line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">line</span> <span class="op">&amp;</span> <span class="op">!</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">treatment_line</span><span class="op">)</span><span class="op">)</span>, <span class="st">''</span><span class="op">)</span>,
-    drug <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">drug</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">prescription</span><span class="op">)</span>, <span class="st">''</span><span class="op">)</span>,
-    case <span class="op">=</span> <span class="va">case</span>,
-    stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span>
-    <span class="op">)</span>;
-
-  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html">within</a></span><span class="op">(</span>
-    data <span class="op">=</span> <span class="va">y</span>,
-    expr <span class="op">=</span> <span class="op">{</span>
-      <span class="va">p</span>      <span class="op">&lt;-</span> <span class="va">x</span><span class="op">/</span><span class="va">n</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fl">1.96</span> <span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">up</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span> <span class="op">&lt;</span> <span class="fl">1</span>, <span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span>, <span class="fl">1</span><span class="op">)</span>;
-      <span class="va">lo</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span>, <span class="fl">0</span><span class="op">)</span>;
-    <span class="op">}</span>
-    <span class="op">)</span>;
-
-  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>;
-
-<span class="op">}</span>
 
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
   <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xnr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"1) R0"</span><span class="op">)</span><span class="op">)</span>
@@ -892,25 +926,30 @@
     legend.position <span class="op">=</span> <span class="st">"bottom"</span>,
     panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
     panel.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>
-    <span class="op">)</span>
+  <span class="op">)</span>
 <span class="op">}</span>
 
 <span class="va">gg</span></code></pre></div>
-<p><img src="reference/figures/README-fig_03-1.png" width="100%"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr_reset.html">ggthemr_reset</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#[FC/191113/14:27]# graph MRI worsening?</span>
+<div class="figure">
+<p><img src="reference/figures/README-fig_03-1.png" alt="**Figure 3**.
+      Comparison between disease worsening and three scenarios:
+      R0 (no relapse), R1 (relapse during the first year),
+      and R2 (relapse during the second year).
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%"></p>
+<p class="caption">
+</p>
+<p><strong>Figure 3</strong>. Comparison between disease worsening and three scenarios: R0 (no relapse), R1 (relapse during the first year), and R2 (relapse during the second year). See <a href="https://www.mdpi.com/2077-0383/10/4/868" class="uri">https://www.mdpi.com/2077-0383/10/4/868</a>, Kapica-Topczewska et al. (2021).</p>
 
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">ggTheme</span><span class="op">)</span> 
-
-<span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
+</div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
 <span class="va">onerlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1"</span><span class="op">)</span>
 <span class="va">oneY2rlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R2"</span><span class="op">)</span>
 
-<span class="va">Xnr</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">norlp</span>, f <span class="op">=</span> <span class="va">norlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
-<span class="va">Xor</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">onerlp</span>, f <span class="op">=</span> <span class="va">onerlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
-<span class="va">X2r</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">oneY2rlp</span>, f <span class="op">=</span> <span class="va">oneY2rlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
+<span class="va">Xnr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">norlp</span>, f <span class="op">=</span> <span class="va">norlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
+<span class="va">Xor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">onerlp</span>, f <span class="op">=</span> <span class="va">onerlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
+<span class="va">X2r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">oneY2rlp</span>, f <span class="op">=</span> <span class="va">oneY2rlp</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
 
 <span class="va">FUN</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">drug</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">case</span> <span class="op">=</span> <span class="cn">NA</span>, <span class="va">line</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">{</span>
 
@@ -928,22 +967,22 @@
     data <span class="op">=</span> <span class="va">y</span>,
     expr <span class="op">=</span> <span class="op">{</span>
       <span class="va">p</span>      <span class="op">&lt;-</span> <span class="va">x</span><span class="op">/</span><span class="va">n</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fl">1.96</span> <span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>;
-      <span class="va">up</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span> <span class="op">&lt;</span> <span class="fl">1</span>, <span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span>, <span class="fl">1</span><span class="op">)</span>;
-      <span class="va">lo</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span>, <span class="fl">0</span><span class="op">)</span>;
+      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fl">1.96</span> <span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>
+      <span class="va">halfCI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span> <span class="op">(</span><span class="va">p</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">/</span> <span class="va">n</span><span class="op">)</span>
+      <span class="va">up</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span> <span class="op">&lt;</span> <span class="fl">1</span>, <span class="va">p</span> <span class="op">+</span> <span class="va">halfCI</span>, <span class="fl">1</span><span class="op">)</span>
+      <span class="va">lo</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">p</span> <span class="op">-</span> <span class="va">halfCI</span>, <span class="fl">0</span><span class="op">)</span>
     <span class="op">}</span>
-    <span class="op">)</span>;
+  <span class="op">)</span>
 
-  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>;
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
 
 <span class="op">}</span>
 
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xnr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"1) R0"</span><span class="op">)</span><span class="op">)</span>
-  , <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xor</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"2) R1"</span><span class="op">)</span><span class="op">)</span>
-  , <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">X2r</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"3) R2"</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">)</span>;
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xnr</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"1) R0"</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">Xor</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"2) R1"</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">X2r</span>, <span class="va">FUN</span>, case <span class="op">=</span> <span class="st">"3) R2"</span><span class="op">)</span><span class="op">)</span>
+<span class="op">)</span>
 
 <span class="va">dtaplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span>
   <span class="va">dtaplot</span>, 
@@ -963,8 +1002,8 @@
     up <span class="op">=</span> <span class="cn">NA</span>,
     halfCI <span class="op">=</span> <span class="cn">NA</span>,
     p <span class="op">=</span> <span class="fl">0.002</span>
-    <span class="op">)</span>
   <span class="op">)</span>
+<span class="op">)</span>
 
 <span class="va">gg</span> <span class="op">&lt;-</span> <span class="op">{</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>
@@ -1003,18 +1042,25 @@
     legend.position <span class="op">=</span> <span class="st">"bottom"</span>,
     panel.grid.major.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,
     panel.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>
-    <span class="op">)</span>
+  <span class="op">)</span>
 
 <span class="op">}</span>
 
 <span class="va">gg</span></code></pre></div>
-<p><img src="reference/figures/README-fig_04-1.png" width="100%"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr_reset.html">ggthemr_reset</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#[FC/200121/14:45]# graph MRI worsening? </span>
+<div class="figure">
+<p><img src="reference/figures/README-fig_04-1.png" alt="**Figure 4**.
+      Comparison between MRI activity and the three scenarios:
+      R0 (no relapse), R1 (relapse during the first year), and
+      R2 (relapse during the second year).
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%"></p>
+<p class="caption">
+</p>
+<p><strong>Figure 4</strong>. Comparison between MRI activity and the three scenarios: R0 (no relapse), R1 (relapse during the first year), and R2 (relapse during the second year). See <a href="https://www.mdpi.com/2077-0383/10/4/868" class="uri">https://www.mdpi.com/2077-0383/10/4/868</a>, Kapica-Topczewska et al. (2021).</p>
 
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">ggTheme</span><span class="op">)</span> 
+</div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co">#[FC/200121/14:45]# graph MRI worsening? </span>
 
 <span class="va">norlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>
 
@@ -1149,13 +1195,29 @@
 
 <span class="va">gg</span>
 <span class="co">#&gt; Warning: Removed 8 rows containing missing values (geom_text).</span></code></pre></div>
-<p><img src="reference/figures/README-fig_05-1.png" width="100%"></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr_reset.html">ggthemr_reset</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr.html">ggthemr</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">ggTheme</span><span class="op">)</span> 
-<span class="va">pirma</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0+MRI0"</span><span class="op">)</span>
+<div class="figure">
+<p><img src="reference/figures/README-fig_05-1.png" alt="**Figure 5.** Comparison between the observed frequencies of MRI
+      activity and month of observation when no relapse was
+      ever recorded. The upper pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses
+      first- and second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the
+      drug (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab,
+        light brown, NAT). DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%"></p>
+<p class="caption">
+</p>
+<p><strong>Figure 5.</strong> Comparison between the observed frequencies of MRI activity and month of observation when no relapse was ever recorded. The upper pane uses the complete set of observations (green; label at y = 1 is “All”), the middle pane uses first- and second-line treatment (label at y = 1; first-line, dark brown; second-line, dark blue), and the lower pane uses the drug (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab, light brown, NAT). DMT: disease-modifying therapy. See <a href="https://www.mdpi.com/2077-0383/10/4/868" class="uri">https://www.mdpi.com/2077-0383/10/4/868</a>, Kapica-Topczewska et al. (2021).</p>
+
+</div>
+</div>
+<div id="disease-progression-relapses-and-mri-activity" class="section level3">
+<h3 class="hasAnchor">
+<a href="#disease-progression-relapses-and-mri-activity" class="anchor"></a>Disease progression: relapses and MRI Activity</h3>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">pirma</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0+MRI0"</span><span class="op">)</span>
 <span class="va">X</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">pirma</span>, f <span class="op">=</span> <span class="va">pirma</span><span class="op">$</span><span class="va">presc_months_cat</span><span class="op">)</span>
 <span class="va">Xline</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">pirma</span>, f <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">pirma</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">presc_months_cat</span>, <span class="va">treatment_line</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="va">Xpres</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span>
@@ -1226,7 +1288,7 @@
     <span class="va">case</span> <span class="op">==</span> <span class="st">"1) All"</span>, <span class="st">"All"</span>, 
     <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">case</span> <span class="op">==</span> <span class="st">"2) line"</span>, <span class="va">line</span>, <span class="va">drug</span><span class="op">)</span>
   <span class="op">)</span>
-  <span class="op">)</span>
+<span class="op">)</span>
 
 <span class="va">dtaplot</span><span class="op">$</span><span class="va">Colour</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span>
   <span class="va">dtaplot</span><span class="op">$</span><span class="va">Colour</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"INF"</span>, <span class="st">"GLA"</span>, <span class="st">"FTY"</span>, <span class="st">"NAT"</span>, <span class="st">"I"</span>, <span class="st">"II"</span>, <span class="st">"All"</span><span class="op">)</span>
@@ -1287,11 +1349,33 @@
 
 <span class="va">gg</span>
 <span class="co">#&gt; Warning: Removed 8 rows containing missing values (geom_text).</span></code></pre></div>
-<p><img src="reference/figures/README-fig_06-1.png" width="100%"></p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="fu">ggthemr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemr/man/ggthemr_reset.html">ggthemr_reset</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="figure">
+<p><img src="reference/figures/README-fig_06-1.png" alt="**Figure 6**. Patients with evidenced disease progression:
+      the proportion of estimations derived from observation of patients
+      never associated with any relapses or brain MRI activity between 12
+      and 60 months from the prescription start. The upper
+      pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses first- and
+      second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the drug
+      (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF;
+        Natalizumab, light brown, NAT). The
+      error bar represents the standard error estimated asp × (1 − p)/n,
+      with p being the number of positives and n the total
+      number of observations. DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%"></p>
+<p class="caption">
+</p>
+<p><strong>Figure 6</strong>. Patients with evidenced disease progression: the proportion of estimations derived from observation of patients never associated with any relapses or brain MRI activity between 12 and 60 months from the prescription start. The upper pane uses the complete set of observations (green; label at y = 1 is “All”), the middle pane uses first- and second-line treatment (label at y = 1; first-line, dark brown; second-line, dark blue), and the lower pane uses the drug (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab, light brown, NAT). The error bar represents the standard error estimated asp × (1 − p)/n, with p being the number of positives and n the total number of observations. DMT: disease-modifying therapy. See <a href="https://www.mdpi.com/2077-0383/10/4/868" class="uri">https://www.mdpi.com/2077-0383/10/4/868</a>, Kapica-Topczewska et al. (2021).</p>
+
+</div>
+</div>
+<div id="modele-probability-of-disease-worsening" class="section level3">
+<h3 class="hasAnchor">
+<a href="#modele-probability-of-disease-worsening" class="anchor"></a>Modele: Probability of Disease Worsening</h3>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># &gt; "*overdispersion when residual deviance is larger than residual degrees of</span>
 <span class="co"># &gt; freedom*" [@Crawley2013]</span>
 
@@ -1303,11 +1387,8 @@
   data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0"</span><span class="op">)</span>,
   expr <span class="op">=</span> <span class="op">{</span>
     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-      <span class="va">presc_id</span>,
       Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">presc_months_cat</span><span class="op">)</span>,
       ARMCD <span class="op">=</span> <span class="va">ARMCD</span>,
-      <span class="co"># Time = factor(presc_months_cat, levels = seq(12,60,12), ordered = TRUE),</span>
-      <span class="co"># Time = presc_months_cat,</span>
       line <span class="op">=</span> <span class="va">treatment_line</span>,
       drug <span class="op">=</span> <span class="va">prescription</span>,
       sex <span class="op">=</span> <span class="va">sex</span>,
@@ -1330,7 +1411,6 @@
   data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1"</span> <span class="op">&amp;</span> <span class="op">!</span> <span class="va">presc_months_cat</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">48</span>, <span class="fl">60</span><span class="op">)</span><span class="op">)</span>,
   expr <span class="op">=</span> <span class="op">{</span>
     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-      <span class="va">presc_id</span>,
       Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">presc_months_cat</span><span class="op">)</span>,
       ARMCD <span class="op">=</span> <span class="va">ARMCD</span>,
       line <span class="op">=</span> <span class="va">treatment_line</span>,
@@ -1357,7 +1437,6 @@
   data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1+"</span> <span class="op">&amp;</span> <span class="op">!</span> <span class="va">presc_months_cat</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">48</span>, <span class="fl">60</span><span class="op">)</span><span class="op">)</span>,
   expr <span class="op">=</span> <span class="op">{</span>
     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-      <span class="va">presc_id</span>,
       Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">presc_months_cat</span><span class="op">)</span>,
       ARMCD <span class="op">=</span> <span class="va">ARMCD</span>,
       line <span class="op">=</span> <span class="va">treatment_line</span>,
@@ -1385,7 +1464,6 @@
   data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R1-"</span> <span class="op">&amp;</span> <span class="op">!</span> <span class="va">presc_months_cat</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">36</span>, <span class="fl">48</span>, <span class="fl">60</span><span class="op">)</span><span class="op">)</span>,
   expr <span class="op">=</span> <span class="op">{</span>
     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-      <span class="va">presc_id</span>,
       Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">presc_months_cat</span><span class="op">)</span>,
       ARMCD <span class="op">=</span> <span class="va">ARMCD</span>,
       line <span class="op">=</span> <span class="va">treatment_line</span>,
@@ -1411,7 +1489,6 @@
   data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R2"</span><span class="op">)</span>,
   expr <span class="op">=</span> <span class="op">{</span>
     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-      <span class="va">presc_id</span>,
       Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">presc_months_cat</span><span class="op">)</span>,
       ARMCD <span class="op">=</span> <span class="va">ARMCD</span>,
       line <span class="op">=</span> <span class="va">treatment_line</span>,
@@ -1438,7 +1515,6 @@
   data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">ADPIRA</span>, <span class="va">ARMCD</span> <span class="op">==</span> <span class="st">"R0+MRI0"</span><span class="op">)</span>,
   expr <span class="op">=</span> <span class="op">{</span>
     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
-      <span class="va">presc_id</span>,
       Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">presc_months_cat</span><span class="op">)</span>,
       ARMCD <span class="op">=</span> <span class="va">ARMCD</span>,
       line <span class="op">=</span> <span class="va">treatment_line</span>,
@@ -1458,7 +1534,7 @@
 <span class="op">)</span>
 
 <span class="co">###}}} -- vim fold</span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">covariates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"sex"</span>, <span class="st">"line"</span>, <span class="st">"drug"</span>, <span class="st">"age"</span>, <span class="st">"EDSS"</span><span class="op">)</span>
 <span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">res_glm</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">glm</span><span class="op">)</span>
 
@@ -1761,7 +1837,7 @@
 </tbody>
 </table>
 <p>Candiadate covariates. The deviance table compares within each Arm the deviance of the model <br><span class="math display">#</span><br> to the model including an additional covariate (#+).</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">res_glm</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">glm</span><span class="op">)</span>
 
 <span class="va">effectTest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span>
@@ -2145,7 +2221,7 @@
 </tbody>
 </table>
 <p>Effect tests.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">at</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>EDSS <span class="op">=</span> <span class="fl">2</span>, age <span class="op">=</span> <span class="fl">30</span>, sex <span class="op">=</span> <span class="st">"female"</span><span class="op">)</span>
 
 <span class="va">em</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
@@ -2600,6 +2676,154 @@
 </table>
 <p>Adjusted Means.</p>
 </div>
+<div id="data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#data" class="anchor"></a>Data</h3>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">ADPIRA</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="1%">
+<col width="10%">
+<col width="3%">
+<col width="8%">
+<col width="11%">
+<col width="9%">
+<col width="13%">
+<col width="9%">
+<col width="6%">
+<col width="3%">
+<col width="4%">
+<col width="2%">
+<col width="6%">
+<col width="8%">
+</colgroup>
+<thead><tr class="header">
+<th align="left"></th>
+<th align="left">ARM</th>
+<th align="left">ARMCD</th>
+<th align="right">EDSS_start</th>
+<th align="left">treatment_line</th>
+<th align="left">prescription</th>
+<th align="right">presc_months_cat</th>
+<th align="right">EDSS_current</th>
+<th align="right">dMRI_12m</th>
+<th align="left">worse</th>
+<th align="left">sex</th>
+<th align="right">age</th>
+<th align="right">AgeSympt</th>
+<th align="right">Sympt2Presc</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">R0: no relapse</td>
+<td align="left">R0</td>
+<td align="right">0.5</td>
+<td align="left">I</td>
+<td align="left">INF</td>
+<td align="right">12</td>
+<td align="right">0.5</td>
+<td align="right">3</td>
+<td align="left">FALSE</td>
+<td align="left">male</td>
+<td align="right">24</td>
+<td align="right">24</td>
+<td align="right">200</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">R0: no relapse</td>
+<td align="left">R0</td>
+<td align="right">3.0</td>
+<td align="left">I</td>
+<td align="left">INF</td>
+<td align="right">12</td>
+<td align="right">3.0</td>
+<td align="right">0</td>
+<td align="left">FALSE</td>
+<td align="left">female</td>
+<td align="right">54</td>
+<td align="right">52</td>
+<td align="right">986</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="left">R0: no relapse</td>
+<td align="left">R0</td>
+<td align="right">0.0</td>
+<td align="left">I</td>
+<td align="left">GLA</td>
+<td align="right">12</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="left">FALSE</td>
+<td align="left">female</td>
+<td align="right">25</td>
+<td align="right">24</td>
+<td align="right">543</td>
+</tr>
+<tr class="even">
+<td align="left">22</td>
+<td align="left">R0: no relapse</td>
+<td align="left">R0</td>
+<td align="right">1.0</td>
+<td align="left">I</td>
+<td align="left">INF</td>
+<td align="right">12</td>
+<td align="right">1.0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="left">male</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">919</td>
+</tr>
+<tr class="odd">
+<td align="left">24</td>
+<td align="left">R0: no relapse</td>
+<td align="left">R0</td>
+<td align="right">2.0</td>
+<td align="left">I</td>
+<td align="left">INF</td>
+<td align="right">12</td>
+<td align="right">1.5</td>
+<td align="right">0</td>
+<td align="left">FALSE</td>
+<td align="left">male</td>
+<td align="right">37</td>
+<td align="right">33</td>
+<td align="right">1627</td>
+</tr>
+<tr class="even">
+<td align="left">26</td>
+<td align="left">R0: no relapse</td>
+<td align="left">R0</td>
+<td align="right">2.5</td>
+<td align="left">I</td>
+<td align="left">INF</td>
+<td align="right">12</td>
+<td align="right">2.0</td>
+<td align="right">0</td>
+<td align="left">FALSE</td>
+<td align="left">female</td>
+<td align="right">52</td>
+<td align="right">43</td>
+<td align="right">3124</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="references" class="section level2">
+<h2 class="hasAnchor">
+<a href="#references" class="anchor"></a>References</h2>
+<div id="refs" class="references">
+<div id="ref-Kapica-Topczewska2021">
+<p>Kapica-Topczewska, Katarzyna, François Collin, Joanna Tarasiuk, Agata Czarnowska, Monika Chorąży, Anna Mirończuk, Jan Kochanowicz, and Alina Kułakowska. 2021. “Assessment of Disability Progression Independent of Relapse and Brain Mri Activity in Patients with Multiple Sclerosis in Poland.” <em>Journal of Clinical Medicine</em> 10 (4). <a href="https://doi.org/10.3390/jcm10040868" class="uri">https://doi.org/10.3390/jcm10040868</a>.</p>
+</div>
+</div>
+</div>
 </div>
   </div>
 
@@ -2617,7 +2841,13 @@
 </ul>
 </div>
 
-  </div>
+  <div class="dev-status">
+<h2>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://www.tidyverse.org/lifecycle/#maturing"><img src="https://img.shields.io/badge/lifecycle-maturing-blue.svg" alt="Lifecycle: maturing"></a></li>
+</ul>
+</div>
+</div>
 </div>
 
 

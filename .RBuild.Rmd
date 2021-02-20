@@ -7,7 +7,6 @@ author: FCACollin
 Package squeleton:
 
 ```{r}
-# TODO https://rmflight.github.io/posts/2014/07/vignetteAnalysis.html
 options(
   usethis.description = list(
     `Authors@R` = 'person(
@@ -36,11 +35,11 @@ options(
 usethis::create_package(".", check_name = TRUE)
 usethis::use_data_raw()
 usethis::use_readme_rmd()
-rmarkdown::render("README.Rmd")
 usethis::use_build_ignore("README.html")
 usethis::use_build_ignore("inst/extdata/*")
 usethis::use_build_ignore("docs")
 usethis::use_build_ignore(".RBuild.Rmd")
+rmarkdown::render("README.Rmd")
 pkgdown::build_site()
 ```
 
@@ -55,6 +54,5 @@ devtools::document()
 devtools::check()
 devtools::install()
 ```
-
 
 

@@ -126,17 +126,8 @@ in the Polish RRMS patient population.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span><span class='op'>(</span><span class='va'>ADPIRA</span>, <span class='st'>"metadata"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;                [,1]                                                                      
-#&gt; name           "Analysis data set for PIRA study."                                       
-#&gt; date           "2021-02-19"                                                              
-#&gt; Authorisationa "Data shared in accordance with participants' consent"                    
-#&gt; readFile       "File Encoding UTF8, ';' as separator and dots for decimals"              
-#&gt; key            "One record per patient, drug, prescription start date, study Arm, visit."
-#&gt; content        "Data corresponding to the analysis reported in Kapica et al. 2020"       </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span><span class='op'>(</span><span class='va'>ADPIRA</span>, <span class='va'>attr</span>, which <span class='op'>=</span> <span class='st'>"label"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; $presc_id
-#&gt; [1] "Unique prescription identifier (stat. ind.)."
-#&gt; 
-#&gt; $ARM
+</div><div class='output co'>#&gt; NULL</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span><span class='op'>(</span><span class='va'>ADPIRA</span>, <span class='va'>attr</span>, which <span class='op'>=</span> <span class='st'>"label"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; $ARM
 #&gt; [1] "Arm of the study, the prescription panel."
 #&gt; 
 #&gt; $ARMCD
@@ -148,14 +139,8 @@ in the Polish RRMS patient population.</p>
 #&gt; $treatment_line
 #&gt; [1] "Treatment line."
 #&gt; 
-#&gt; $patient_id
-#&gt; [1] "Unique patient identifier."
-#&gt; 
 #&gt; $prescription
 #&gt; [1] "Drug prescribed, one of Interferon beta (INF), Glatiramer Acetate (GA), Fingolimod (FTY), Natalizumab (NAT)."
-#&gt; 
-#&gt; $presc_start
-#&gt; [1] "Prescription start date (ISO 8601)."
 #&gt; 
 #&gt; $presc_months_cat
 #&gt; [1] "Monitoring time point in months since prescription start (12, 24, 36, 48, 60 months)"
@@ -163,50 +148,14 @@ in the Polish RRMS patient population.</p>
 #&gt; $EDSS_current
 #&gt; [1] "EDSS at the time of the visit."
 #&gt; 
-#&gt; $n_rlps_12m
-#&gt; [1] "Number of confirmed relapse within 12 preceding months."
-#&gt; 
-#&gt; $n_rlps_d1_12m
-#&gt; [1] "Number of confirmed relapse within 12 months associated with maintained EDSS progression of at least 1 point."
-#&gt; 
-#&gt; $dT2_12m
-#&gt; [1] "Brain MRI activity: number of new T2 lesion detected within 12 months preceeding the visit."
-#&gt; 
-#&gt; $dGd_12m
-#&gt; [1] "Brain MRI activity: number of new Gd+ lesion detected within 12 months preceeding the visit."
-#&gt; 
 #&gt; $dMRI_12m
 #&gt; [1] "Brain MRI activity: number of new T2 or Gd+ lesion detected within 12 months preceeding the visit."
 #&gt; 
 #&gt; $worse
 #&gt; [1] "The disease was worse than at baseline (TRUE/FALSE)."
 #&gt; 
-#&gt; $relapse_activity
-#&gt; [1] "Relapse activity was detected (TRUE/FALSE)."
-#&gt; 
-#&gt; $mri_activity
-#&gt; [1] "Brain MRI activity was detected (TRUE/FALSE)."
-#&gt; 
-#&gt; $switch_from
-#&gt; [1] "The previous prescription, 'naive' if first prescription, '1st in prog' if not naive and new program.\n  "
-#&gt; 
-#&gt; $naive
-#&gt; [1] "Naive prescription (TRUE/FALSE)"
-#&gt; 
-#&gt; $birthyear
-#&gt; [1] "Birthyear"
-#&gt; 
 #&gt; $sex
 #&gt; [1] "Sex."
-#&gt; 
-#&gt; $symptom_date
-#&gt; [1] "Date of first symptoms (ISO 8601)."
-#&gt; 
-#&gt; $diagnosis_date
-#&gt; [1] "Date of diagnosis (ISO 8601)."
-#&gt; 
-#&gt; $first_presc_date
-#&gt; [1] "Date of first prescription (ISO 8601)."
 #&gt; 
 #&gt; $age
 #&gt; NULL
@@ -217,41 +166,20 @@ in the Polish RRMS patient population.</p>
 #&gt; $Sympt2Presc
 #&gt; NULL
 #&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>ADPIRA</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;                             presc_id            ARM ARMCD EDSS_start
-#&gt; 1      1 2014-09-17 I INF 2014-09-17 R0: no relapse    R0        0.5
-#&gt; 10  1000 2014-09-23 I INF 2014-09-23 R0: no relapse    R0        3.0
-#&gt; 17 10007 2013-09-09 I GLA 2013-09-09 R0: no relapse    R0        0.0
-#&gt; 22 10008 2016-11-18 I INF 2016-11-18 R0: no relapse    R0        1.0
-#&gt; 24 10011 2016-11-18 I INF 2016-11-18 R0: no relapse    R0        2.0
-#&gt; 26  1002 2015-01-19 I INF 2015-01-19 R0: no relapse    R0        2.5
-#&gt;    treatment_line patient_id prescription presc_start presc_months_cat
-#&gt; 1               I          1          INF  2014-09-17               12
-#&gt; 10              I       1000          INF  2014-09-23               12
-#&gt; 17              I      10007          GLA  2013-09-09               12
-#&gt; 22              I      10008          INF  2016-11-18               12
-#&gt; 24              I      10011          INF  2016-11-18               12
-#&gt; 26              I       1002          INF  2015-01-19               12
-#&gt;    EDSS_current n_rlps_12m n_rlps_d1_12m dT2_12m dGd_12m dMRI_12m worse
-#&gt; 1           0.5          0             0       0       3        3 FALSE
-#&gt; 10          3.0          0             0       0       0        0 FALSE
-#&gt; 17          0.0          0             0       0       0        0 FALSE
-#&gt; 22          1.0          0             0       1       0        1 FALSE
-#&gt; 24          1.5          0             0       0       0        0 FALSE
-#&gt; 26          2.0          0             0       0       0        0 FALSE
-#&gt;    relapse_activity mri_activity switch_from naive birthyear    sex
-#&gt; 1             FALSE         TRUE       naive  TRUE      1990   male
-#&gt; 10            FALSE        FALSE       naive  TRUE      1960 female
-#&gt; 17            FALSE        FALSE       naive  TRUE      1988 female
-#&gt; 22            FALSE         TRUE       naive  TRUE      1991   male
-#&gt; 24            FALSE        FALSE       naive  TRUE      1979   male
-#&gt; 26            FALSE        FALSE       naive  TRUE      1963 female
-#&gt;    symptom_date diagnosis_date first_presc_date age AgeSympt Sympt2Presc
-#&gt; 1    2014-03-01     2014-05-03       2014-09-17  24       24         200
-#&gt; 10   2012-01-11     2014-04-30       2014-09-23  54       52         986
-#&gt; 17   2012-03-15     2013-07-03       2013-09-09  25       24         543
-#&gt; 22   2014-05-14     2016-06-28       2016-11-18  25       23         919
-#&gt; 24   2012-06-05     2016-10-03       2016-11-18  37       33        1627
-#&gt; 26   2006-07-01     2014-12-01       2015-01-19  52       43        3124</div></pre>
+</div><div class='output co'>#&gt;               ARM ARMCD EDSS_start treatment_line prescription presc_months_cat
+#&gt; 1  R0: no relapse    R0        0.5              I          INF               12
+#&gt; 10 R0: no relapse    R0        3.0              I          INF               12
+#&gt; 17 R0: no relapse    R0        0.0              I          GLA               12
+#&gt; 22 R0: no relapse    R0        1.0              I          INF               12
+#&gt; 24 R0: no relapse    R0        2.0              I          INF               12
+#&gt; 26 R0: no relapse    R0        2.5              I          INF               12
+#&gt;    EDSS_current dMRI_12m worse    sex age AgeSympt Sympt2Presc
+#&gt; 1           0.5        3 FALSE   male  24       24         200
+#&gt; 10          3.0        0 FALSE female  54       52         986
+#&gt; 17          0.0        0 FALSE female  25       24         543
+#&gt; 22          1.0        1 FALSE   male  25       23         919
+#&gt; 24          1.5        0 FALSE   male  37       33        1627
+#&gt; 26          2.0        0 FALSE female  52       43        3124</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

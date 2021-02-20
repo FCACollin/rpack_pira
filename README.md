@@ -5,25 +5,21 @@
 
 <!-- badges: start -->
 
+[![Lifecycle:
+maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 <!-- badges: end -->
 
-TO DO before delivery:
-
-  - skim the data to the essential.
-  - skim the code.
-
-The goal of RPack.PIRA is to …
+This is the analysis behind the *Assessment of Disability Progression
+Independent of Relapse and Brain MRI Activity in Patients with Multiple
+Sclerosis in Poland* (Kapica-Topczewska et al. 2021), a peer-reviewed
+paper available at: <https://www.mdpi.com/2077-0383/10/4/868>. The code
+has not been further optimised but reproduces with fidelity the reported
+results.
 
 ## Installation
 
-You can install the released version of RPack.PIRA from
-[CRAN](https://CRAN.R-project.org) with:
-
-``` r
-install.packages("RPack.PIRA")
-```
-
-And the development version from [GitHub](https://github.com/) with:
+You can install the released version of `RPack.PIRA` from
+[GitHub](https://github.com/FCACollin/rpack_pira) with:
 
 ``` r
 # install.packages("devtools")
@@ -34,43 +30,97 @@ devtools::install_github("FCACollin/rpack_pira")
 
 ``` r
 library(RPack.PIRA)
-library(ggplot2);
-library(parallel);
+library(ggplot2)
 library(emmeans)
-library(multcomp)
-numCores <- detectCores()
 
-input <- list(
-  ggTheme = c(
-    "flat",      "flat dark", "camoflauge", "chalk", "copper",
-    "dust",      "earth",     "fresh",      "grape", "grass",
-    "greyscale", "light",      "lilac",     "pale",  "sea", 
-    "sky",        "solarized", "dust"
-    )[8]
-  )
+if (require(ggthemr)) ggthemr::ggthemr("fresh") 
 
-ggthemr::ggthemr(input$ggTheme) 
+captions <- function(x) {
+  list(
+    fig1 = "**Figure 1.** Comparison between observed frequencies of worsening
+    diseases and month of observation when no relapse was ever recorded.
+    The upper pane uses the complete set of observations
+    (green; label at y = 1 is \"All\"),
+      the middle pane uses first- and second-line treatment
+      (label at y = 1; first-line, dark brown; second-line, dark blue),
+      and the lower pane uses drug
+      (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue,
+        GLA; Interferon, blue, INF; Natalizumab, light brown, NAT).
+      Abundance is represented by transparency and the figure at the top of
+      each bar. The error bar represents the standard error estimated as
+      p × (1 − p)/n, with p being the number of positives and n the total
+      number of observations.  DMT: disease-modifying therapy.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig2 = "**Figure 2**. Comparison of disease worsening and one relapse
+      during the first year of treatment (between 6 and 12 months).
+      Colors are for: R0 = no relapse, R1 = relapse during the first year.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig3 = "**Figure 3**.
+      Comparison between disease worsening and three scenarios:
+      R0 (no relapse), R1 (relapse during the first year),
+      and R2 (relapse during the second year).
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig4 = "**Figure 4**.
+      Comparison between MRI activity and the three scenarios:
+      R0 (no relapse), R1 (relapse during the first year), and
+      R2 (relapse during the second year).
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig5 = "**Figure 5.** Comparison between the observed frequencies of MRI
+      activity and month of observation when no relapse was
+      ever recorded. The upper pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses
+      first- and second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the
+      drug (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab,
+        light brown, NAT). DMT: disease-modifying therapy.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig6 = "**Figure 6**. Patients with evidenced disease progression:
+      the proportion of estimations derived from observation of patients
+      never associated with any relapses or brain MRI activity between 12
+      and 60 months from the prescription start. The upper
+      pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses first- and
+      second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the drug
+      (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF;
+        Natalizumab, light brown, NAT). The
+      error bar represents the standard error estimated asp × (1 − p)/n,
+      with p being the number of positives and n the total
+      number of observations. DMT: disease-modifying therapy.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021."
+      )[[x]]
+} 
 ```
+
+### Patient characteristics
 
 ``` r
 X <- split(ADPIRA, f = list(ADPIRA$presc_months_cat, ADPIRA$ARM))
 
-tmp2 <- do.call(
+tbl <- do.call(
   rbind, lapply(
     X, function(x){
 
       data.frame(
-        Arm       = unique(x$ARMCD),
-        Month     = unique(x$presc_months),
-        n         = nrow(x),
-        "F:M"     = round(sum(x$sex == "female")/sum(x$sex == "male"), 2),
-        age       = round(median(x$age)),
-        AgeSympt  = round(median(x$AgeSympt), 2),
+        Arm = unique(x$ARMCD),
+        Month = unique(x$presc_months),
+        n = nrow(x),
+        F.M = round(sum(x$sex == "female") / sum(x$sex == "male"), 2),
+        age = round(median(x$age)),
+        AgeSympt = round(median(x$AgeSympt), 2),
         Sympt2Presc = round(median(x$Sympt2Presc)/365.25, 2),
-        rlp_n      = sum(x$n_rlps_12m > 0),
-        EDSS_start   = round(median(x$EDSS_start), 1),
+        rlp_n = sum(x$n_rlps_12m > 0),
+        EDSS_start  = round(median(x$EDSS_start), 1),
         EDSS_current = round(median(x$EDSS_current), 1),
-        Worse_n    = sum(x$worse)
+        Worse_n = sum(x$worse)
       )
 
     }
@@ -78,56 +128,74 @@ tmp2 <- do.call(
 )
 
 knitr::kable(
-  tmp2,
-  caption = paste(
-    "Description of the prescription per scenario and month of observation"
-    ),
-  row.names = FALSE
+  tbl,
+  caption = "Patient characteristics.
+  Abbreviations: Arm = arm of the study;
+  R0 = no relapse during treatment; R1, R2 = the occurrence of relapse
+  during the first and the second year of treatment, respectively;
+  MRI = magnetic resonance imaging; M = months; n = number;
+  F:M = female to male ratio;
+  Age Symptoms = age at the first symptoms;
+  Symptoms = duration from the first symptoms to prescription start in years;
+  EDSS = The Expanded Disability Status Scale;
+  Worsening number = number of patients with disease worsening.",
+  row.names = FALSE,
+  col.names = c(
+    Arm = "Arm", Month = "M", n = "n", "F.M" = "F:M", age = "Age",
+    AgeSympt = "Age Symptoms", Sympt2Presc = "Symptoms",
+    rlp_n   = "Relapse Number", EDSS_start = "EDSS Baseline",
+    Worse_n = "Worsening Number"
+    )[names(tbl)]
 )
 ```
 
-| Arm     | Month |    n |  F.M | age | AgeSympt | Sympt2Presc | rlp\_n | EDSS\_start | EDSS\_current | Worse\_n |
-| :------ | ----: | ---: | ---: | --: | -------: | ----------: | -----: | ----------: | ------------: | -------: |
-| R0      |    12 | 5339 | 2.32 |  36 |     30.0 |        3.61 |      0 |         1.5 |           1.5 |      231 |
-| R0      |    24 | 2961 | 2.24 |  37 |     30.0 |        3.78 |      0 |         1.5 |           1.5 |      184 |
-| R0      |    36 | 1392 | 2.20 |  36 |     30.0 |        3.38 |      0 |         1.5 |           1.5 |       93 |
-| R0      |    48 |  525 | 2.28 |  36 |     31.0 |        3.48 |      0 |         1.5 |           1.5 |       40 |
-| R0      |    60 |  255 | 2.04 |  36 |     31.0 |        3.16 |      0 |         1.0 |           1.0 |       21 |
-| R0+MRI0 |    12 | 4051 | 2.38 |  37 |     31.0 |        3.90 |      0 |         2.0 |           1.5 |      170 |
-| R0+MRI0 |    24 | 2010 | 2.33 |  38 |     31.0 |        4.22 |      0 |         1.5 |           1.5 |      130 |
-| R0+MRI0 |    36 |  885 | 2.16 |  38 |     31.0 |        3.78 |      0 |         1.5 |           1.5 |       67 |
-| R0+MRI0 |    48 |  296 | 2.75 |  38 |     32.0 |        3.78 |      0 |         1.5 |           1.5 |       27 |
-| R0+MRI0 |    60 |  139 | 2.56 |  38 |     32.0 |        3.65 |      0 |         1.0 |           1.0 |       11 |
-| R1-     |    12 |  250 | 2.52 |  35 |     28.0 |        4.21 |    250 |         2.0 |           2.2 |       13 |
-| R1-     |    24 |   80 | 3.00 |  36 |     28.0 |        4.77 |      0 |         2.2 |           2.0 |        2 |
-| R1-     |    36 |   40 | 2.33 |  37 |     29.5 |        3.32 |      0 |         2.0 |           2.0 |        0 |
-| R1-     |    48 |   12 | 2.00 |  30 |     27.0 |        2.45 |      0 |         2.0 |           1.8 |        0 |
-| R1-     |    60 |    6 | 2.00 |  33 |     29.0 |        1.81 |      0 |         2.0 |           2.0 |        1 |
-| R1      |    12 |  592 | 2.23 |  35 |     28.0 |        4.06 |    592 |         2.0 |           2.5 |      103 |
-| R1      |    24 |  153 | 2.48 |  35 |     28.0 |        4.37 |      0 |         2.0 |           2.0 |       17 |
-| R1      |    36 |   63 | 1.86 |  37 |     29.0 |        3.69 |      0 |         2.0 |           2.0 |        5 |
-| R1      |    48 |   21 | 2.00 |  32 |     28.0 |        2.57 |      0 |         1.5 |           1.5 |        0 |
-| R1      |    60 |   10 | 1.50 |  30 |     27.0 |        2.03 |      0 |         1.5 |           1.8 |        1 |
-| R1+     |    12 |  342 | 2.05 |  35 |     28.0 |        4.00 |    342 |         2.0 |           2.5 |       90 |
-| R1+     |    24 |   73 | 2.04 |  34 |     28.0 |        3.98 |      0 |         2.0 |           2.0 |       15 |
-| R1+     |    36 |   23 | 1.30 |  36 |     27.0 |        4.31 |      0 |         2.0 |           2.5 |        5 |
-| R1+     |    48 |    9 | 2.00 |  35 |     30.0 |        2.79 |      0 |         1.5 |           1.5 |        0 |
-| R1+     |    60 |    4 | 1.00 |  28 |     24.0 |        2.97 |      0 |         1.2 |           1.2 |        0 |
-| R2      |    12 | 5339 | 2.32 |  36 |     30.0 |        3.61 |      0 |         1.5 |           1.5 |      231 |
-| R2      |    24 |  378 | 2.26 |  37 |     30.0 |        3.46 |    378 |         2.0 |           2.0 |       94 |
-| R2      |    36 |  116 | 1.37 |  38 |     32.0 |        2.89 |      0 |         2.0 |           2.0 |       16 |
-| R2      |    48 |   31 | 2.10 |  38 |     32.0 |        2.16 |      0 |         1.5 |           2.0 |        5 |
-| R2      |    60 |   12 | 3.00 |  38 |     34.0 |        1.75 |      0 |         1.2 |           1.8 |        3 |
+| Arm     |  M |    n |  F:M | Age | Age Symptoms | Symptoms | Relapse Number | EDSS Baseline |  NA | Worsening Number |
+| :------ | -: | ---: | ---: | --: | -----------: | -------: | -------------: | ------------: | --: | ---------------: |
+| R0      | 12 | 5339 | 2.32 |  36 |         30.0 |     3.61 |              0 |           1.5 | 1.5 |              231 |
+| R0      | 24 | 2961 | 2.24 |  37 |         30.0 |     3.78 |              0 |           1.5 | 1.5 |              184 |
+| R0      | 36 | 1392 | 2.20 |  36 |         30.0 |     3.38 |              0 |           1.5 | 1.5 |               93 |
+| R0      | 48 |  525 | 2.28 |  36 |         31.0 |     3.48 |              0 |           1.5 | 1.5 |               40 |
+| R0      | 60 |  255 | 2.04 |  36 |         31.0 |     3.16 |              0 |           1.0 | 1.0 |               21 |
+| R0+MRI0 | 12 | 4051 | 2.38 |  37 |         31.0 |     3.90 |              0 |           2.0 | 1.5 |              170 |
+| R0+MRI0 | 24 | 2010 | 2.33 |  38 |         31.0 |     4.22 |              0 |           1.5 | 1.5 |              130 |
+| R0+MRI0 | 36 |  885 | 2.16 |  38 |         31.0 |     3.78 |              0 |           1.5 | 1.5 |               67 |
+| R0+MRI0 | 48 |  296 | 2.75 |  38 |         32.0 |     3.78 |              0 |           1.5 | 1.5 |               27 |
+| R0+MRI0 | 60 |  139 | 2.56 |  38 |         32.0 |     3.65 |              0 |           1.0 | 1.0 |               11 |
+| R1-     | 12 |  250 | 2.52 |  35 |         28.0 |     4.21 |              0 |           2.0 | 2.2 |               13 |
+| R1-     | 24 |   80 | 3.00 |  36 |         28.0 |     4.77 |              0 |           2.2 | 2.0 |                2 |
+| R1-     | 36 |   40 | 2.33 |  37 |         29.5 |     3.32 |              0 |           2.0 | 2.0 |                0 |
+| R1-     | 48 |   12 | 2.00 |  30 |         27.0 |     2.45 |              0 |           2.0 | 1.8 |                0 |
+| R1-     | 60 |    6 | 2.00 |  33 |         29.0 |     1.81 |              0 |           2.0 | 2.0 |                1 |
+| R1      | 12 |  592 | 2.23 |  35 |         28.0 |     4.06 |              0 |           2.0 | 2.5 |              103 |
+| R1      | 24 |  153 | 2.48 |  35 |         28.0 |     4.37 |              0 |           2.0 | 2.0 |               17 |
+| R1      | 36 |   63 | 1.86 |  37 |         29.0 |     3.69 |              0 |           2.0 | 2.0 |                5 |
+| R1      | 48 |   21 | 2.00 |  32 |         28.0 |     2.57 |              0 |           1.5 | 1.5 |                0 |
+| R1      | 60 |   10 | 1.50 |  30 |         27.0 |     2.03 |              0 |           1.5 | 1.8 |                1 |
+| R1+     | 12 |  342 | 2.05 |  35 |         28.0 |     4.00 |              0 |           2.0 | 2.5 |               90 |
+| R1+     | 24 |   73 | 2.04 |  34 |         28.0 |     3.98 |              0 |           2.0 | 2.0 |               15 |
+| R1+     | 36 |   23 | 1.30 |  36 |         27.0 |     4.31 |              0 |           2.0 | 2.5 |                5 |
+| R1+     | 48 |    9 | 2.00 |  35 |         30.0 |     2.79 |              0 |           1.5 | 1.5 |                0 |
+| R1+     | 60 |    4 | 1.00 |  28 |         24.0 |     2.97 |              0 |           1.2 | 1.2 |                0 |
+| R2      | 12 | 5339 | 2.32 |  36 |         30.0 |     3.61 |              0 |           1.5 | 1.5 |              231 |
+| R2      | 24 |  378 | 2.26 |  37 |         30.0 |     3.46 |              0 |           2.0 | 2.0 |               94 |
+| R2      | 36 |  116 | 1.37 |  38 |         32.0 |     2.89 |              0 |           2.0 | 2.0 |               16 |
+| R2      | 48 |   31 | 2.10 |  38 |         32.0 |     2.16 |              0 |           1.5 | 2.0 |                5 |
+| R2      | 60 |   12 | 3.00 |  38 |         34.0 |     1.75 |              0 |           1.2 | 1.8 |                3 |
 
-Description of the prescription per scenario and month of observation
+Patient characteristics. Abbreviations: Arm = arm of the study; R0 = no
+relapse during treatment; R1, R2 = the occurrence of relapse during the
+first and the second year of treatment, respectively; MRI = magnetic
+resonance imaging; M = months; n = number; F:M = female to male ratio;
+Age Symptoms = age at the first symptoms; Symptoms = duration from the
+first symptoms to prescription start in years; EDSS = The Expanded
+Disability Status Scale; Worsening number = number of patients with
+disease worsening.
+
+### Disease progression and relapses
 
 ``` r
-# EDSS worsening? 
-
-ggthemr::ggthemr(input$ggTheme) 
-
 norlp <- subset(ADPIRA, ARMCD == "R0")
-X     <- split(x = norlp, f = norlp$presc_months_cat)
+X <- split(x = norlp, f = norlp$presc_months_cat)
 Xline <- split(
   x = norlp, f = with(norlp, paste(presc_months_cat, treatment_line))
 )
@@ -136,52 +204,59 @@ Xpres <- split(
   drop = TRUE
 )
 
-FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
+FUN <- function(
+  x,
+  criteria = c("worse", "dMRI_12m"),
+  drug = FALSE, case = NA, line = FALSE) {
 
+  criteria <- match.arg(criteria)
   y <- data.frame(
     Time = unique(x$presc_months_cat),
-    n    = nrow(x),                    # n cases
-    x    = sum(x$worse),                # positive cases
-    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ''),
-    drug = ifelse(drug, unique(x$prescription), ''),
+    n = nrow(x),
+    x = sum(x[[criteria]]),
+    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ""),
+    drug = ifelse(drug, unique(x$prescription), ""),
     case = case,
     stringsAsFactors = FALSE
   )
 
-  y <- within(
-    data = y,
-    expr = {
-      p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
-    }
-  )
+  y$p <- y$x / y$n
+  y$halfCI <- 1.96 * sqrt((y$p * (1 - y$p)) / y$n)
+  y$halfCI <- sqrt( (y$p*(1-y$p))/ y$n)
+  y$up <- ifelse(y$p + y$halfCI < 1, y$p + y$halfCI, 1)
+  y$lo <- ifelse(y$p - y$halfCI > 0, y$p - y$halfCI, 0)
 
-  return(y)
+  y
 
 }
 
 dtaplot <- rbind(
-  do.call(rbind, lapply(X, FUN, case = "1) All"))
-  , do.call(rbind, lapply(Xline, FUN, case = "2) line", line = TRUE))
-  , do.call(
-    rbind, lapply(Xpres, FUN, case = "3) drug", line = TRUE, drug = TRUE)
-  )
+  do.call(rbind, lapply(X, FUN, case = "1) All")),
+  do.call(rbind, lapply(Xline, FUN, case = "2) line", line = TRUE)),
+  do.call(rbind, lapply(Xpres, FUN, case = "3) drug", line = TRUE, drug = TRUE))
 )
 
 dtaplot <- subset(dtaplot, (up - lo) < .1)
 
+# Graph fine tuning.
 dtaplot <- rbind(
   dtaplot,
   data.frame(
     Time = c(48, 48, 60, 60, 60, 48, 60),
     n = 0,
     x = NA,
-    line = c("", "", "", "", "", "II", "II"),
-    drug = c("FTY", "NAT", "FTY", "NAT", "GLA", "", ""),
-    case = c("3) drug", "3) drug", "3) drug", "3) drug", "3) drug", "2) line", "2) line"),
+    line = c(
+      "", "", "", "", "",
+      "II", "II"
+      ),
+    drug = c(
+      "FTY", "NAT", "FTY", "NAT", "GLA",
+      "", ""
+      ),
+    case = c(
+      "3) drug", "3) drug", "3) drug", "3) drug", "3) drug",
+      "2) line", "2) line"
+      ),
     lo = NA,
     up = NA,
     halfCI = NA,
@@ -193,7 +268,7 @@ dtaplot$Colour <- with(
     case == "1) All", "All", 
     ifelse(case == "2) line", line, drug)
   )
-  )
+)
 dtaplot$Colour <- factor(
   dtaplot$Colour, levels = c("INF", "GLA", "FTY", "NAT", "I", "II", "All")
 )
@@ -247,23 +322,52 @@ gg <- {
     legend.position = "none",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 }
 
 gg
 #> Warning: Removed 7 rows containing missing values (geom_text).
 ```
 
-<img src="man/figures/README-fig_01-1.png" width="100%" />
+<div class="figure">
+
+<img src="man/figures/README-fig_01-1.png" alt="**Figure 1.** Comparison between observed frequencies of worsening
+    diseases and month of observation when no relapse was ever recorded.
+    The upper pane uses the complete set of observations
+    (green; label at y = 1 is &quot;All&quot;),
+      the middle pane uses first- and second-line treatment
+      (label at y = 1; first-line, dark brown; second-line, dark blue),
+      and the lower pane uses drug
+      (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue,
+        GLA; Interferon, blue, INF; Natalizumab, light brown, NAT).
+      Abundance is represented by transparency and the figure at the top of
+      each bar. The error bar represents the standard error estimated as
+      p × (1 − p)/n, with p being the number of positives and n the total
+      number of observations.  DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%" />
+
+<p class="caption">
+
+**Figure 1.** Comparison between observed frequencies of worsening
+diseases and month of observation when no relapse was ever recorded. The
+upper pane uses the complete set of observations (green; label at y = 1
+is “All”), the middle pane uses first- and second-line treatment (label
+at y = 1; first-line, dark brown; second-line, dark blue), and the lower
+pane uses drug (label at y = 1; Fingolimod, red, FTY; Glatiramer
+Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab, light
+brown, NAT). Abundance is represented by transparency and the figure at
+the top of each bar. The error bar represents the standard error
+estimated as p × (1 − p)/n, with p being the number of positives and n
+the total number of observations. DMT: disease-modifying therapy. See
+<https://www.mdpi.com/2077-0383/10/4/868>, Kapica-Topczewska et al.
+(2021).
+
+</p>
+
+</div>
 
 ``` r
-
-ggthemr::ggthemr_reset()
-```
-
-``` r
-ggthemr::ggthemr(input$ggTheme) 
-
 norlp <- subset(ADPIRA, ARMCD == "R0")
 onerlp <- subset(ADPIRA, ARMCD == "R1")
 onebadrlp <- subset(ADPIRA, ARMCD == "R1+")
@@ -274,44 +378,16 @@ Xor <- split(x = onerlp, f = onerlp$presc_months_cat)
 Xbr <- split(x = onebadrlp, f = onebadrlp$presc_months_cat)
 Xlr <- split(x = onelowrlp, f = onelowrlp$presc_months_cat)
 
-FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
-
-  y <- data.frame(
-    Time = unique(x$presc_months_cat),
-    n    = nrow(x),                    # n cases
-    x    = sum(x$worse),                # positive cases
-    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ''),
-    drug = ifelse(drug, unique(x$prescription), ''),
-    case = case,
-    stringsAsFactors = FALSE
-    );
-
-  y <- within(
-    data = y,
-    expr = {
-      p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
-    }
-    );
-
-  return(y);
-
-}
-
 dtaplot <- rbind(
-  do.call(rbind, lapply(Xnr, FUN, case = "1) R0"))
-  , do.call(rbind, lapply(Xor, FUN, case = "2) R1 (all)"))
-  , do.call(rbind, lapply(Xbr, FUN, case = "3) R1+ (severe)"))
-  , do.call(rbind, lapply(Xlr, FUN, case = "4) R1- (moderate)"))
-  );
+  do.call(rbind, lapply(Xnr, FUN, case = "1) R0")),
+  do.call(rbind, lapply(Xor, FUN, case = "2) R1 (all)")),
+  do.call(rbind, lapply(Xbr, FUN, case = "3) R1+ (severe)")),
+  do.call(rbind, lapply(Xlr, FUN, case = "4) R1- (moderate)"))
+)
 
 dtaplot <- subset(
   dtaplot, 
   (up - lo) < .15  & (up + lo) > 0 & Time %in% seq(12, 36, 12)
-
 )
 dtaplot <- rbind(
   dtaplot,
@@ -326,22 +402,8 @@ dtaplot <- rbind(
     up = NA,
     halfCI = NA,
     p = 0.001
-    )
   )
-dtaplot
-#>     Time    n   x line drug              case         lo         up      halfCI          p
-#> 12    12 5339 231                       1) R0 0.04048207 0.04605099 0.002784464 0.04326653
-#> 24    24 2961 184                       1) R0 0.05770468 0.06657766 0.004436487 0.06214117
-#> 36    36 1392  93                       1) R0 0.06011786 0.07350283 0.006692482 0.06681034
-#> 121   12  592 103                 2) R1 (all) 0.15840566 0.18956731 0.015580826 0.17398649
-#> 241   24  153  17                 2) R1 (all) 0.08570391 0.13651831 0.025407198 0.11111111
-#> 361   36   63   5                 2) R1 (all) 0.04530951 0.11342065 0.034055572 0.07936508
-#> 122   12  342  90             3) R1+ (severe) 0.23934664 0.28696915 0.023811259 0.26315789
-#> 242   24   73  15             3) R1+ (severe) 0.15818880 0.25277011 0.047290656 0.20547945
-#> 123   12  250  13           4) R1- (moderate) 0.03795778 0.06604222 0.014042222 0.05200000
-#> 243   24   80   2           4) R1- (moderate) 0.00754470 0.04245530 0.017455300 0.02500000
-#> 1     36    0  NA             3) R1+ (severe)         NA         NA          NA 0.00100000
-#> 2     36    0  NA           4) R1- (moderate)         NA         NA          NA 0.00100000
+)
 gg <- {
   ggplot(
     data = dtaplot,
@@ -379,23 +441,35 @@ gg <- {
     legend.position = "bottom",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 }
 
 gg
 ```
 
-<img src="man/figures/README-fig_02-1.png" width="100%" />
+<div class="figure">
+
+<img src="man/figures/README-fig_02-1.png" alt="**Figure 2**. Comparison of disease worsening and one relapse
+      during the first year of treatment (between 6 and 12 months).
+      Colors are for: R0 = no relapse, R1 = relapse during the first year.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%" />
+
+<p class="caption">
+
+**Figure 2**. Comparison of disease worsening and one relapse during the
+first year of treatment (between 6 and 12 months). Colors are for: R0 =
+no relapse, R1 = relapse during the first year. See
+<https://www.mdpi.com/2077-0383/10/4/868>, Kapica-Topczewska et al.
+(2021).
+
+</p>
+
+</div>
+
+### Disease progression and MRI Activity
 
 ``` r
-ggthemr::ggthemr_reset()
-```
-
-``` r
-#[FC/191113/14:27]# graph EDSS worsening?
-
-ggthemr::ggthemr(input$ggTheme) 
-
 norlp <- subset(ADPIRA, ARMCD == "R0")
 onerlp <- subset(ADPIRA, ARMCD == "R1")
 oneY2rlp <- subset(ADPIRA, ARMCD == "R2")
@@ -403,33 +477,6 @@ oneY2rlp <- subset(ADPIRA, ARMCD == "R2")
 Xnr     <- split(x = norlp, f = norlp$presc_months_cat)
 Xor     <- split(x = onerlp, f = onerlp$presc_months_cat)
 X2r     <- split(x = oneY2rlp, f = oneY2rlp$presc_months_cat)
-
-FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
-
-  y <- data.frame(
-    Time = unique(x$presc_months_cat),
-    n    = nrow(x),                    # n cases
-    x    = sum(x$worse),                # positive cases
-    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ''),
-    drug = ifelse(drug, unique(x$prescription), ''),
-    case = case,
-    stringsAsFactors = FALSE
-    );
-
-  y <- within(
-    data = y,
-    expr = {
-      p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
-    }
-    );
-
-  return(y);
-
-}
 
 dtaplot <- rbind(
   do.call(rbind, lapply(Xnr, FUN, case = "1) R0"))
@@ -479,30 +526,40 @@ gg <- {
     legend.position = "bottom",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 }
 
 gg
 ```
 
-<img src="man/figures/README-fig_03-1.png" width="100%" />
+<div class="figure">
+
+<img src="man/figures/README-fig_03-1.png" alt="**Figure 3**.
+      Comparison between disease worsening and three scenarios:
+      R0 (no relapse), R1 (relapse during the first year),
+      and R2 (relapse during the second year).
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%" />
+
+<p class="caption">
+
+**Figure 3**. Comparison between disease worsening and three scenarios:
+R0 (no relapse), R1 (relapse during the first year), and R2 (relapse
+during the second year). See <https://www.mdpi.com/2077-0383/10/4/868>,
+Kapica-Topczewska et al. (2021).
+
+</p>
+
+</div>
 
 ``` r
-ggthemr::ggthemr_reset()
-```
-
-``` r
-#[FC/191113/14:27]# graph MRI worsening?
-
-ggthemr::ggthemr(input$ggTheme) 
-
 norlp <- subset(ADPIRA, ARMCD == "R0")
 onerlp <- subset(ADPIRA, ARMCD == "R1")
 oneY2rlp <- subset(ADPIRA, ARMCD == "R2")
 
-Xnr     <- split(x = norlp, f = norlp$presc_months_cat)
-Xor     <- split(x = onerlp, f = onerlp$presc_months_cat)
-X2r     <- split(x = oneY2rlp, f = oneY2rlp$presc_months_cat)
+Xnr <- split(x = norlp, f = norlp$presc_months_cat)
+Xor <- split(x = onerlp, f = onerlp$presc_months_cat)
+X2r <- split(x = oneY2rlp, f = oneY2rlp$presc_months_cat)
 
 FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
 
@@ -520,22 +577,22 @@ FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
     data = y,
     expr = {
       p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
+      halfCI <- 1.96 *sqrt( (p*(1-p))/ n)
+      halfCI <- sqrt( (p*(1-p))/ n)
+      up     <- ifelse(p + halfCI < 1, p + halfCI, 1)
+      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0)
     }
-    );
+  )
 
-  return(y);
+  return(y)
 
 }
 
 dtaplot <- rbind(
-  do.call(rbind, lapply(Xnr, FUN, case = "1) R0"))
-  , do.call(rbind, lapply(Xor, FUN, case = "2) R1"))
-  , do.call(rbind, lapply(X2r, FUN, case = "3) R2"))
-  );
+  do.call(rbind, lapply(Xnr, FUN, case = "1) R0")),
+  do.call(rbind, lapply(Xor, FUN, case = "2) R1")),
+  do.call(rbind, lapply(X2r, FUN, case = "3) R2"))
+)
 
 dtaplot <- subset(
   dtaplot, 
@@ -555,8 +612,8 @@ dtaplot <- rbind(
     up = NA,
     halfCI = NA,
     p = 0.002
-    )
   )
+)
 
 gg <- {
   ggplot(
@@ -595,23 +652,35 @@ gg <- {
     legend.position = "bottom",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 
 }
 
 gg
 ```
 
-<img src="man/figures/README-fig_04-1.png" width="100%" />
+<div class="figure">
 
-``` r
-ggthemr::ggthemr_reset()
-```
+<img src="man/figures/README-fig_04-1.png" alt="**Figure 4**.
+      Comparison between MRI activity and the three scenarios:
+      R0 (no relapse), R1 (relapse during the first year), and
+      R2 (relapse during the second year).
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%" />
+
+<p class="caption">
+
+**Figure 4**. Comparison between MRI activity and the three scenarios:
+R0 (no relapse), R1 (relapse during the first year), and R2 (relapse
+during the second year). See <https://www.mdpi.com/2077-0383/10/4/868>,
+Kapica-Topczewska et al. (2021).
+
+</p>
+
+</div>
 
 ``` r
 #[FC/200121/14:45]# graph MRI worsening? 
-
-ggthemr::ggthemr(input$ggTheme) 
 
 norlp <- subset(ADPIRA, ARMCD == "R0")
 
@@ -748,15 +817,40 @@ gg
 #> Warning: Removed 8 rows containing missing values (geom_text).
 ```
 
-<img src="man/figures/README-fig_05-1.png" width="100%" />
+<div class="figure">
+
+<img src="man/figures/README-fig_05-1.png" alt="**Figure 5.** Comparison between the observed frequencies of MRI
+      activity and month of observation when no relapse was
+      ever recorded. The upper pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses
+      first- and second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the
+      drug (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab,
+        light brown, NAT). DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%" />
+
+<p class="caption">
+
+**Figure 5.** Comparison between the observed frequencies of MRI
+activity and month of observation when no relapse was ever recorded. The
+upper pane uses the complete set of observations (green; label at y = 1
+is “All”), the middle pane uses first- and second-line treatment (label
+at y = 1; first-line, dark brown; second-line, dark blue), and the lower
+pane uses the drug (label at y = 1; Fingolimod, red, FTY; Glatiramer
+Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab, light
+brown, NAT). DMT: disease-modifying therapy. See
+<https://www.mdpi.com/2077-0383/10/4/868>, Kapica-Topczewska et al.
+(2021).
+
+</p>
+
+</div>
+
+### Disease progression: relapses and MRI Activity
 
 ``` r
-
-ggthemr::ggthemr_reset()
-```
-
-``` r
-ggthemr::ggthemr(input$ggTheme) 
 pirma <- subset(ADPIRA, ARMCD == "R0+MRI0")
 X     <- split(x = pirma, f = pirma$presc_months_cat)
 Xline <- split(x = pirma, f = with(pirma, paste(presc_months_cat, treatment_line)))
@@ -828,7 +922,7 @@ dtaplot$Colour <- with(
     case == "1) All", "All", 
     ifelse(case == "2) line", line, drug)
   )
-  )
+)
 
 dtaplot$Colour <- factor(
   dtaplot$Colour, levels = c("INF", "GLA", "FTY", "NAT", "I", "II", "All")
@@ -891,12 +985,47 @@ gg
 #> Warning: Removed 8 rows containing missing values (geom_text).
 ```
 
-<img src="man/figures/README-fig_06-1.png" width="100%" />
+<div class="figure">
 
-``` r
+<img src="man/figures/README-fig_06-1.png" alt="**Figure 6**. Patients with evidenced disease progression:
+      the proportion of estimations derived from observation of patients
+      never associated with any relapses or brain MRI activity between 12
+      and 60 months from the prescription start. The upper
+      pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses first- and
+      second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the drug
+      (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF;
+        Natalizumab, light brown, NAT). The
+      error bar represents the standard error estimated asp × (1 − p)/n,
+      with p being the number of positives and n the total
+      number of observations. DMT: disease-modifying therapy.
+      See &lt;https://www.mdpi.com/2077-0383/10/4/868&gt;,
+      @Kapica-Topczewska2021." width="100%" />
 
-ggthemr::ggthemr_reset()
-```
+<p class="caption">
+
+**Figure 6**. Patients with evidenced disease progression: the
+proportion of estimations derived from observation of patients never
+associated with any relapses or brain MRI activity between 12 and 60
+months from the prescription start. The upper pane uses the complete set
+of observations (green; label at y = 1 is “All”), the middle pane uses
+first- and second-line treatment (label at y = 1; first-line, dark
+brown; second-line, dark blue), and the lower pane uses the drug (label
+at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue, GLA;
+Interferon, blue, INF; Natalizumab, light brown, NAT). The error bar
+represents the standard error estimated asp × (1 − p)/n, with p being
+the number of positives and n the total number of observations. DMT:
+disease-modifying therapy. See
+<https://www.mdpi.com/2077-0383/10/4/868>, Kapica-Topczewska et al.
+(2021).
+
+</p>
+
+</div>
+
+### Modele: Probability of Disease Worsening
 
 ``` r
 # > "*overdispersion when residual deviance is larger than residual degrees of
@@ -910,11 +1039,8 @@ res_glm$R0$data <- with(
   data = subset(ADPIRA, ARMCD == "R0"),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
-      # Time = factor(presc_months_cat, levels = seq(12,60,12), ordered = TRUE),
-      # Time = presc_months_cat,
       line = treatment_line,
       drug = prescription,
       sex = sex,
@@ -937,7 +1063,6 @@ res_glm$R1$data <- with(
   data = subset(ADPIRA, ARMCD == "R1" & ! presc_months_cat %in% c(48, 60)),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -964,7 +1089,6 @@ res_glm$`R1+`$data <- with(
   data = subset(ADPIRA, ARMCD == "R1+" & ! presc_months_cat %in% c(48, 60)),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -992,7 +1116,6 @@ res_glm$`R1-`$data <- with(
   data = subset(ADPIRA, ARMCD == "R1-" & ! presc_months_cat %in% c(36, 48, 60)),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -1018,7 +1141,6 @@ res_glm$R2$data <- with(
   data = subset(ADPIRA, ARMCD == "R2"),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -1045,7 +1167,6 @@ res_glm$`R0+MRI0`$data <- with(
   data = subset(ADPIRA, ARMCD == "R0+MRI0"),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -1391,4 +1512,37 @@ knitr::kable(em, caption = "Adjusted Means.")
 | 16 | R2      | 48   | \[EDSS=2\] \[Age=30\]     | 0.1211789 | 0.0527918 | 0.0495990 | 0.2670357 | 2      |
 | 17 | R2      | 60   | \[EDSS=2\] \[Age=30\]     | 0.1783812 | 0.0991107 | 0.0545388 | 0.4496842 | 2      |
 
-Adjusted Means.
+Adjusted
+Means.
+
+### Data
+
+``` r
+knitr::kable(head(ADPIRA))
+```
+
+|    | ARM            | ARMCD | EDSS\_start | treatment\_line | prescription | presc\_months\_cat | EDSS\_current | dMRI\_12m | worse | sex    | age | AgeSympt | Sympt2Presc |
+| :- | :------------- | :---- | ----------: | :-------------- | :----------- | -----------------: | ------------: | --------: | :---- | :----- | --: | -------: | ----------: |
+| 1  | R0: no relapse | R0    |         0.5 | I               | INF          |                 12 |           0.5 |         3 | FALSE | male   |  24 |       24 |         200 |
+| 10 | R0: no relapse | R0    |         3.0 | I               | INF          |                 12 |           3.0 |         0 | FALSE | female |  54 |       52 |         986 |
+| 17 | R0: no relapse | R0    |         0.0 | I               | GLA          |                 12 |           0.0 |         0 | FALSE | female |  25 |       24 |         543 |
+| 22 | R0: no relapse | R0    |         1.0 | I               | INF          |                 12 |           1.0 |         1 | FALSE | male   |  25 |       23 |         919 |
+| 24 | R0: no relapse | R0    |         2.0 | I               | INF          |                 12 |           1.5 |         0 | FALSE | male   |  37 |       33 |        1627 |
+| 26 | R0: no relapse | R0    |         2.5 | I               | INF          |                 12 |           2.0 |         0 | FALSE | female |  52 |       43 |        3124 |
+
+## References
+
+<div id="refs" class="references">
+
+<div id="ref-Kapica-Topczewska2021">
+
+Kapica-Topczewska, Katarzyna, François Collin, Joanna Tarasiuk, Agata
+Czarnowska, Monika Chorąży, Anna Mirończuk, Jan Kochanowicz, and Alina
+Kułakowska. 2021. “Assessment of Disability Progression Independent of
+Relapse and Brain Mri Activity in Patients with Multiple Sclerosis in
+Poland.” *Journal of Clinical Medicine* 10 (4).
+<https://doi.org/10.3390/jcm10040868>.
+
+</div>
+
+</div>

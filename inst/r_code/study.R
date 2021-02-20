@@ -11,51 +11,96 @@
 ## @knitr setup ----
 
 library(RPack.PIRA)
-library(ggplot2);
-library(parallel);
+library(ggplot2)
 library(emmeans)
-library(multcomp)
-numCores <- detectCores()
 
-input <- list(
-  ggTheme = c(
-    "flat",      "flat dark", "camoflauge", "chalk", "copper",
-    "dust",      "earth",     "fresh",      "grape", "grass",
-    "greyscale", "light",      "lilac",     "pale",  "sea", 
-    "sky",        "solarized", "dust"
-    )[8]
-  )
+if (require(ggthemr)) ggthemr::ggthemr("fresh") 
 
-ggthemr::ggthemr(input$ggTheme) 
+captions <- function(x) {
+  list(
+    fig1 = "**Figure 1.** Comparison between observed frequencies of worsening
+    diseases and month of observation when no relapse was ever recorded.
+    The upper pane uses the complete set of observations
+    (green; label at y = 1 is \"All\"),
+      the middle pane uses first- and second-line treatment
+      (label at y = 1; first-line, dark brown; second-line, dark blue),
+      and the lower pane uses drug
+      (label at y = 1; Fingolimod, red, FTY; Glatiramer Acetate, dark blue,
+        GLA; Interferon, blue, INF; Natalizumab, light brown, NAT).
+      Abundance is represented by transparency and the figure at the top of
+      each bar. The error bar represents the standard error estimated as
+      p × (1 − p)/n, with p being the number of positives and n the total
+      number of observations.  DMT: disease-modifying therapy.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig2 = "**Figure 2**. Comparison of disease worsening and one relapse
+      during the first year of treatment (between 6 and 12 months).
+      Colors are for: R0 = no relapse, R1 = relapse during the first year.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig3 = "**Figure 3**.
+      Comparison between disease worsening and three scenarios:
+      R0 (no relapse), R1 (relapse during the first year),
+      and R2 (relapse during the second year).
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig4 = "**Figure 4**.
+      Comparison between MRI activity and the three scenarios:
+      R0 (no relapse), R1 (relapse during the first year), and
+      R2 (relapse during the second year).
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig5 = "**Figure 5.** Comparison between the observed frequencies of MRI
+      activity and month of observation when no relapse was
+      ever recorded. The upper pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses
+      first- and second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the
+      drug (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF; Natalizumab,
+        light brown, NAT). DMT: disease-modifying therapy.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021.",
+      fig6 = "**Figure 6**. Patients with evidenced disease progression:
+      the proportion of estimations derived from observation of patients
+      never associated with any relapses or brain MRI activity between 12
+      and 60 months from the prescription start. The upper
+      pane uses the complete set of observations
+      (green; label at y = 1 is “All”), the middle pane uses first- and
+      second-line treatment (label at y = 1; first-line, dark brown;
+        second-line, dark blue), and the lower pane uses the drug
+      (label at y = 1; Fingolimod, red, FTY;
+        Glatiramer Acetate, dark blue, GLA; Interferon, blue, INF;
+        Natalizumab, light brown, NAT). The
+      error bar represents the standard error estimated asp × (1 − p)/n,
+      with p being the number of positives and n the total
+      number of observations. DMT: disease-modifying therapy.
+      See <https://www.mdpi.com/2077-0383/10/4/868>,
+      @Kapica-Topczewska2021."
+      )[[x]]
+} 
 
-## @knitr TODO
-
-# remove all data which could identify a person.
-
-head(ADPIRA)
-ADPIRA$AgeSympt <- as.numeric(substr(ADPIRA$symptom_date, start = 1, stop = 4)) - ADPIRA$birthyear
-ADPIRA$Sympt2Presc <- as.numeric(as.Date(ADPIRA$presc_start) - as.Date(ADPIRA$symptom_date))
 
 ## @knitr table_01 ----
 
 X <- split(ADPIRA, f = list(ADPIRA$presc_months_cat, ADPIRA$ARM))
 
-tmp2 <- do.call(
+tbl <- do.call(
   rbind, lapply(
     X, function(x){
 
       data.frame(
-        Arm       = unique(x$ARMCD),
-        Month     = unique(x$presc_months),
-        n         = nrow(x),
-        "F:M"     = round(sum(x$sex == "female")/sum(x$sex == "male"), 2),
-        age       = round(median(x$age)),
-        AgeSympt  = round(median(x$AgeSympt), 2),
+        Arm = unique(x$ARMCD),
+        Month = unique(x$presc_months),
+        n = nrow(x),
+        F.M = round(sum(x$sex == "female") / sum(x$sex == "male"), 2),
+        age = round(median(x$age)),
+        AgeSympt = round(median(x$AgeSympt), 2),
         Sympt2Presc = round(median(x$Sympt2Presc)/365.25, 2),
-        rlp_n      = sum(x$n_rlps_12m > 0),
-        EDSS_start   = round(median(x$EDSS_start), 1),
+        rlp_n = sum(x$n_rlps_12m > 0),
+        EDSS_start  = round(median(x$EDSS_start), 1),
         EDSS_current = round(median(x$EDSS_current), 1),
-        Worse_n    = sum(x$worse)
+        Worse_n = sum(x$worse)
       )
 
     }
@@ -63,21 +108,31 @@ tmp2 <- do.call(
 )
 
 knitr::kable(
-  tmp2,
-  caption = paste(
-    "Description of the prescription per scenario and month of observation"
-    ),
-  row.names = FALSE
+  tbl,
+  caption = "Patient characteristics.
+  Abbreviations: Arm = arm of the study;
+  R0 = no relapse during treatment; R1, R2 = the occurrence of relapse
+  during the first and the second year of treatment, respectively;
+  MRI = magnetic resonance imaging; M = months; n = number;
+  F:M = female to male ratio;
+  Age Symptoms = age at the first symptoms;
+  Symptoms = duration from the first symptoms to prescription start in years;
+  EDSS = The Expanded Disability Status Scale;
+  Worsening number = number of patients with disease worsening.",
+  row.names = FALSE,
+  col.names = c(
+    Arm = "Arm", Month = "M", n = "n", "F.M" = "F:M", age = "Age",
+    AgeSympt = "Age Symptoms", Sympt2Presc = "Symptoms",
+    rlp_n   = "Relapse Number", EDSS_start = "EDSS Baseline",
+    Worse_n = "Worsening Number"
+    )[names(tbl)]
 )
 
 
 ## @knitr fig_01 ----
-# EDSS worsening? 
-
-ggthemr::ggthemr(input$ggTheme) 
 
 norlp <- subset(ADPIRA, ARMCD == "R0")
-X     <- split(x = norlp, f = norlp$presc_months_cat)
+X <- split(x = norlp, f = norlp$presc_months_cat)
 Xline <- split(
   x = norlp, f = with(norlp, paste(presc_months_cat, treatment_line))
 )
@@ -86,52 +141,59 @@ Xpres <- split(
   drop = TRUE
 )
 
-FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
+FUN <- function(
+  x,
+  criteria = c("worse", "dMRI_12m"),
+  drug = FALSE, case = NA, line = FALSE) {
 
+  criteria <- match.arg(criteria)
   y <- data.frame(
     Time = unique(x$presc_months_cat),
-    n    = nrow(x),                    # n cases
-    x    = sum(x$worse),                # positive cases
-    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ''),
-    drug = ifelse(drug, unique(x$prescription), ''),
+    n = nrow(x),
+    x = sum(x[[criteria]]),
+    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ""),
+    drug = ifelse(drug, unique(x$prescription), ""),
     case = case,
     stringsAsFactors = FALSE
   )
 
-  y <- within(
-    data = y,
-    expr = {
-      p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
-    }
-  )
+  y$p <- y$x / y$n
+  y$halfCI <- 1.96 * sqrt((y$p * (1 - y$p)) / y$n)
+  y$halfCI <- sqrt( (y$p*(1-y$p))/ y$n)
+  y$up <- ifelse(y$p + y$halfCI < 1, y$p + y$halfCI, 1)
+  y$lo <- ifelse(y$p - y$halfCI > 0, y$p - y$halfCI, 0)
 
-  return(y)
+  y
 
 }
 
 dtaplot <- rbind(
-  do.call(rbind, lapply(X, FUN, case = "1) All"))
-  , do.call(rbind, lapply(Xline, FUN, case = "2) line", line = TRUE))
-  , do.call(
-    rbind, lapply(Xpres, FUN, case = "3) drug", line = TRUE, drug = TRUE)
-  )
+  do.call(rbind, lapply(X, FUN, case = "1) All")),
+  do.call(rbind, lapply(Xline, FUN, case = "2) line", line = TRUE)),
+  do.call(rbind, lapply(Xpres, FUN, case = "3) drug", line = TRUE, drug = TRUE))
 )
 
 dtaplot <- subset(dtaplot, (up - lo) < .1)
 
+# Graph fine tuning.
 dtaplot <- rbind(
   dtaplot,
   data.frame(
     Time = c(48, 48, 60, 60, 60, 48, 60),
     n = 0,
     x = NA,
-    line = c("", "", "", "", "", "II", "II"),
-    drug = c("FTY", "NAT", "FTY", "NAT", "GLA", "", ""),
-    case = c("3) drug", "3) drug", "3) drug", "3) drug", "3) drug", "2) line", "2) line"),
+    line = c(
+      "", "", "", "", "",
+      "II", "II"
+      ),
+    drug = c(
+      "FTY", "NAT", "FTY", "NAT", "GLA",
+      "", ""
+      ),
+    case = c(
+      "3) drug", "3) drug", "3) drug", "3) drug", "3) drug",
+      "2) line", "2) line"
+      ),
     lo = NA,
     up = NA,
     halfCI = NA,
@@ -143,7 +205,7 @@ dtaplot$Colour <- with(
     case == "1) All", "All", 
     ifelse(case == "2) line", line, drug)
   )
-  )
+)
 dtaplot$Colour <- factor(
   dtaplot$Colour, levels = c("INF", "GLA", "FTY", "NAT", "I", "II", "All")
 )
@@ -197,16 +259,13 @@ gg <- {
     legend.position = "none",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 }
 
 gg
 
-ggthemr::ggthemr_reset()
 
 ## @knitr fig_02 ----
-
-ggthemr::ggthemr(input$ggTheme) 
 
 norlp <- subset(ADPIRA, ARMCD == "R0")
 onerlp <- subset(ADPIRA, ARMCD == "R1")
@@ -218,44 +277,16 @@ Xor <- split(x = onerlp, f = onerlp$presc_months_cat)
 Xbr <- split(x = onebadrlp, f = onebadrlp$presc_months_cat)
 Xlr <- split(x = onelowrlp, f = onelowrlp$presc_months_cat)
 
-FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
-
-  y <- data.frame(
-    Time = unique(x$presc_months_cat),
-    n    = nrow(x),                    # n cases
-    x    = sum(x$worse),                # positive cases
-    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ''),
-    drug = ifelse(drug, unique(x$prescription), ''),
-    case = case,
-    stringsAsFactors = FALSE
-    );
-
-  y <- within(
-    data = y,
-    expr = {
-      p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
-    }
-    );
-
-  return(y);
-
-}
-
 dtaplot <- rbind(
-  do.call(rbind, lapply(Xnr, FUN, case = "1) R0"))
-  , do.call(rbind, lapply(Xor, FUN, case = "2) R1 (all)"))
-  , do.call(rbind, lapply(Xbr, FUN, case = "3) R1+ (severe)"))
-  , do.call(rbind, lapply(Xlr, FUN, case = "4) R1- (moderate)"))
-  );
+  do.call(rbind, lapply(Xnr, FUN, case = "1) R0")),
+  do.call(rbind, lapply(Xor, FUN, case = "2) R1 (all)")),
+  do.call(rbind, lapply(Xbr, FUN, case = "3) R1+ (severe)")),
+  do.call(rbind, lapply(Xlr, FUN, case = "4) R1- (moderate)"))
+)
 
 dtaplot <- subset(
   dtaplot, 
   (up - lo) < .15  & (up + lo) > 0 & Time %in% seq(12, 36, 12)
-
 )
 dtaplot <- rbind(
   dtaplot,
@@ -270,9 +301,8 @@ dtaplot <- rbind(
     up = NA,
     halfCI = NA,
     p = 0.001
-    )
   )
-dtaplot
+)
 gg <- {
   ggplot(
     data = dtaplot,
@@ -310,17 +340,12 @@ gg <- {
     legend.position = "bottom",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 }
 
 gg
-ggthemr::ggthemr_reset()
 
 ## @knitr fig_03 ----
-
-#[FC/191113/14:27]# graph EDSS worsening?
-
-ggthemr::ggthemr(input$ggTheme) 
 
 norlp <- subset(ADPIRA, ARMCD == "R0")
 onerlp <- subset(ADPIRA, ARMCD == "R1")
@@ -329,33 +354,6 @@ oneY2rlp <- subset(ADPIRA, ARMCD == "R2")
 Xnr     <- split(x = norlp, f = norlp$presc_months_cat)
 Xor     <- split(x = onerlp, f = onerlp$presc_months_cat)
 X2r     <- split(x = oneY2rlp, f = oneY2rlp$presc_months_cat)
-
-FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
-
-  y <- data.frame(
-    Time = unique(x$presc_months_cat),
-    n    = nrow(x),                    # n cases
-    x    = sum(x$worse),                # positive cases
-    line = ifelse(line & !drug, as.character(unique(x$treatment_line)), ''),
-    drug = ifelse(drug, unique(x$prescription), ''),
-    case = case,
-    stringsAsFactors = FALSE
-    );
-
-  y <- within(
-    data = y,
-    expr = {
-      p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
-    }
-    );
-
-  return(y);
-
-}
 
 dtaplot <- rbind(
   do.call(rbind, lapply(Xnr, FUN, case = "1) R0"))
@@ -405,25 +403,20 @@ gg <- {
     legend.position = "bottom",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 }
 
 gg
-ggthemr::ggthemr_reset()
 
 ## @knitr fig_04 ----
-
-#[FC/191113/14:27]# graph MRI worsening?
-
-ggthemr::ggthemr(input$ggTheme) 
 
 norlp <- subset(ADPIRA, ARMCD == "R0")
 onerlp <- subset(ADPIRA, ARMCD == "R1")
 oneY2rlp <- subset(ADPIRA, ARMCD == "R2")
 
-Xnr     <- split(x = norlp, f = norlp$presc_months_cat)
-Xor     <- split(x = onerlp, f = onerlp$presc_months_cat)
-X2r     <- split(x = oneY2rlp, f = oneY2rlp$presc_months_cat)
+Xnr <- split(x = norlp, f = norlp$presc_months_cat)
+Xor <- split(x = onerlp, f = onerlp$presc_months_cat)
+X2r <- split(x = oneY2rlp, f = oneY2rlp$presc_months_cat)
 
 FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
 
@@ -441,22 +434,22 @@ FUN <- function(x, drug = FALSE, case = NA, line = FALSE){
     data = y,
     expr = {
       p      <- x/n;
-      halfCI <- 1.96 *sqrt( (p*(1-p))/ n);
-      halfCI <- sqrt( (p*(1-p))/ n);
-      up     <- ifelse(p + halfCI < 1, p + halfCI, 1);
-      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0);
+      halfCI <- 1.96 *sqrt( (p*(1-p))/ n)
+      halfCI <- sqrt( (p*(1-p))/ n)
+      up     <- ifelse(p + halfCI < 1, p + halfCI, 1)
+      lo     <- ifelse(p - halfCI > 0, p - halfCI, 0)
     }
-    );
+  )
 
-  return(y);
+  return(y)
 
 }
 
 dtaplot <- rbind(
-  do.call(rbind, lapply(Xnr, FUN, case = "1) R0"))
-  , do.call(rbind, lapply(Xor, FUN, case = "2) R1"))
-  , do.call(rbind, lapply(X2r, FUN, case = "3) R2"))
-  );
+  do.call(rbind, lapply(Xnr, FUN, case = "1) R0")),
+  do.call(rbind, lapply(Xor, FUN, case = "2) R1")),
+  do.call(rbind, lapply(X2r, FUN, case = "3) R2"))
+)
 
 dtaplot <- subset(
   dtaplot, 
@@ -476,8 +469,8 @@ dtaplot <- rbind(
     up = NA,
     halfCI = NA,
     p = 0.002
-    )
   )
+)
 
 gg <- {
   ggplot(
@@ -516,17 +509,14 @@ gg <- {
     legend.position = "bottom",
     panel.grid.major.x = element_blank(),
     panel.background = element_blank()
-    )
+  )
 
 }
 
 gg
-ggthemr::ggthemr_reset()
 
 ## @knitr fig_05 ----
 #[FC/200121/14:45]# graph MRI worsening? 
-
-ggthemr::ggthemr(input$ggTheme) 
 
 norlp <- subset(ADPIRA, ARMCD == "R0")
 
@@ -661,11 +651,8 @@ gg <- {
 
 gg
 
-ggthemr::ggthemr_reset()
-
 # @knitr fig_06 ----
 
-ggthemr::ggthemr(input$ggTheme) 
 pirma <- subset(ADPIRA, ARMCD == "R0+MRI0")
 X     <- split(x = pirma, f = pirma$presc_months_cat)
 Xline <- split(x = pirma, f = with(pirma, paste(presc_months_cat, treatment_line)))
@@ -737,7 +724,7 @@ dtaplot$Colour <- with(
     case == "1) All", "All", 
     ifelse(case == "2) line", line, drug)
   )
-  )
+)
 
 dtaplot$Colour <- factor(
   dtaplot$Colour, levels = c("INF", "GLA", "FTY", "NAT", "I", "II", "All")
@@ -798,7 +785,6 @@ gg <- {
 
 gg
 
-ggthemr::ggthemr_reset()
 
 ## @knitr mod_glm_fit ----------------------------------------------------------
 
@@ -813,11 +799,8 @@ res_glm$R0$data <- with(
   data = subset(ADPIRA, ARMCD == "R0"),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
-      # Time = factor(presc_months_cat, levels = seq(12,60,12), ordered = TRUE),
-      # Time = presc_months_cat,
       line = treatment_line,
       drug = prescription,
       sex = sex,
@@ -840,7 +823,6 @@ res_glm$R1$data <- with(
   data = subset(ADPIRA, ARMCD == "R1" & ! presc_months_cat %in% c(48, 60)),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -867,7 +849,6 @@ res_glm$`R1+`$data <- with(
   data = subset(ADPIRA, ARMCD == "R1+" & ! presc_months_cat %in% c(48, 60)),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -895,7 +876,6 @@ res_glm$`R1-`$data <- with(
   data = subset(ADPIRA, ARMCD == "R1-" & ! presc_months_cat %in% c(36, 48, 60)),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -921,7 +901,6 @@ res_glm$R2$data <- with(
   data = subset(ADPIRA, ARMCD == "R2"),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
@@ -948,7 +927,6 @@ res_glm$`R0+MRI0`$data <- with(
   data = subset(ADPIRA, ARMCD == "R0+MRI0"),
   expr = {
     data.frame(
-      presc_id,
       Time = factor(presc_months_cat),
       ARMCD = ARMCD,
       line = treatment_line,
